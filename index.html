@@ -5202,7 +5202,7 @@ function getMathTemplates(grade,term,unitId){
     templates.push(()=>{const a=randInt(1,9),b=randInt(1,9),c=randInt(1,9),d=randInt(1,9);return{type:'choice',q:`${a}.${b} × ${c}.${d} = ?`,opts:[`${(a*10+b)*(c*10+d)/100}`,`${a*c}.${b*d}`,`${a*c+b*d}`,`${(a+c)}.${(b+d)}`],ans:0,explain:`小数乘小数，先按整数乘法计算，再看因数中一共有几位小数，就从积的右边起数出几位，点上小数点。${a}.${b}×${c}.${d} = (${a*10+b})×(${c*10+d})÷100 = ${(a*10+b)*(c*10+d)/100}。`};});
     templates.push(()=>({type:'choice',q:'一个数（0除外）乘大于1的数，积比原来的数？',opts:['大','小','相等','无法确定'],ans:0,explain:'一个数（0除外）乘大于1的数，积比原来的数大；乘小于1的数，积比原来的数小；乘1，积等于原来的数。例如：2×1.5=3，3>2。'}));
     templates.push(()=>{const n=randInt(2,9);return{type:'fill',q:`${n}.5 × 4 = ____`,ans:`${n*4+2}`,explain:`${n}.5×4 = (${n}+0.5)×4 = ${n}×4+0.5×4 = ${n*4}+2 = ${n*4+2}。`};});
-    templates.push(()=>{const n=randInt(10,50);return{type:'app',q:`妈妈买了${n}千克苹果，每千克${randInt(3,8)}.${randInt(1,9)}元，一共需要多少元？`,ans:'（根据具体数值计算）',explain:'总价=单价×数量。小数乘法应用题，先按整数乘法计算，再点小数点。计算时注意单位和格式。'};});
+    templates.push(()=>{const n=randInt(10,50),price=randInt(3,8),cent=randInt(1,9);return{type:'app',q:`妈妈买了${n}千克苹果，每千克${price}.${cent}元，一共需要多少元？`,ans:`${(n*(price+cent/10)).toFixed(1)}元`,explain:`总价=单价×数量=${price}.${cent}×${n}=${(n*(price+cent/10)).toFixed(1)}元。小数乘法应用题，先按整数乘法计算，再点小数点。计算时注意单位和格式。`};});
     // 扩充题目
     templates.push(()=>({type:'choice',q:'0.25×4 = ?',opts:['1','0.1','10','0.01'],ans:0,explain:'0.25×4=1。可以这样想：0.25就是1/4，1/4×4=1。也可以按整数乘法算：25×4=100，因数中有2位小数，从积的右边数出2位点小数点，得1.00=1。'}));
     templates.push(()=>({type:'choice',q:'1.2×0.5 = ?',opts:['0.6','6','0.06','60'],ans:0,explain:'1.2×0.5=0.6。先按整数乘法算：12×5=60，因数中一共有2位小数，从积的右边数出2位点小数点，得0.60=0.6。也可以这样想：0.5就是1/2，1.2的一半是0.6。'}));
@@ -5213,7 +5213,7 @@ function getMathTemplates(grade,term,unitId){
     templates.push(()=>({type:'fill',q:'一个长方形的长是2.5米，宽是1.6米，它的面积是____平方米',ans:'4',explain:'长方形面积=长×宽=2.5×1.6=4平方米。先算25×16=400，因数中有2位小数，得4.00=4。'}));
     templates.push(()=>({type:'calc',q:'计算：(1) 2.5×0.4  (2) 0.36×0.2  (3) 1.25×0.8',ans:'(1)1 (2)0.072 (3)1',explain:'(1) 2.5×0.4=1（25×4=100，2位小数，得1.00=1）。(2) 0.36×0.2=0.072（36×2=72，3位小数，得0.072）。(3) 1.25×0.8=1（125×8=1000，3位小数，得1.000=1）。这三道题的结果都是整数或简单小数，是常见的简便计算组合。'}));
     templates.push(()=>({type:'app',q:'妈妈买了3.5千克苹果，每千克8.6元，一共需要多少元？',ans:'30.1元',explain:'总价=单价×数量=8.6×3.5=30.1元。先算86×35=3010，因数中有2位小数，得30.10=30.1元。'}));
-    templates.push(()=>({type:'app',q:'一间教室长8.5米，宽6.4米，这间教室的面积是多少平方米？如果每平方米需要铺地砖4块，一共需要多少块地砖？',ans:'面积54.4平方米，需要217.6块（约218块）',explain:'教室面积=长×宽=8.5×6.4=54.4平方米。地砖数量=面积×每平方米块数=54.4×4=217.6块，实际需要约218块（要考虑损耗）。'}));
+    templates.push(()=>({type:'app',q:'一间教室长8.5米，宽6.4米，这间教室的面积是多少平方米？如果每平方米需要铺地砖4块，一共需要多少块地砖？',ans:'面积54.4平方米，需要218块地砖',explain:'教室面积=长×宽=8.5×6.4=54.4平方米。地砖数量=面积×每平方米块数=54.4×4=217.6块，实际需要向上取整为218块（地砖不能买半块，还要考虑损耗）。'}));
     templates.push(()=>({type:'app',q:'一种布料每米售价12.5元，妈妈买了2.4米，付给售货员50元，应找回多少元？',ans:'20元',explain:'布料总价=单价×数量=12.5×2.4=30元。应找回=50-30=20元。注意：先算布料总价，再算找回的钱。'}));
   }
   
@@ -5250,7 +5250,7 @@ function getMathTemplates(grade,term,unitId){
     templates.push(()=>({type:'fill',q:'一个数的1.5倍是4.5，这个数是____',ans:'3',explain:'已知一个数的几倍是多少，求这个数用除法。这个数=4.5÷1.5=3。验证：3×1.5=4.5，正确。'}));
     templates.push(()=>({type:'calc',q:'计算：(1) 8.4÷0.6  (2) 0.72÷0.9  (3) 12.5÷0.5',ans:'(1)14 (2)0.8 (3)25',explain:'(1) 8.4÷0.6：同时扩大10倍，84÷6=14。(2) 0.72÷0.9：同时扩大10倍，7.2÷9=0.8。(3) 12.5÷0.5：同时扩大10倍，125÷5=25。'}));
     templates.push(()=>({type:'app',q:'妈妈买了3.5千克苹果，一共花了24.5元，每千克苹果多少元？',ans:'7元',explain:'单价=总价÷数量=24.5÷3.5=7元。除数是小数的除法，先把除数转化成整数：3.5扩大10倍变成35，被除数24.5也扩大10倍变成245。245÷35=7，所以每千克苹果7元。'}));
-    templates.push(()=>({type:'app',q:'一辆汽车2.5小时行驶了150千米，平均每小时行驶多少千米？行驶1千米需要多少小时？',ans:'平均每小时行驶60千米，行驶1千米需要约0.017小时',explain:'速度=路程÷时间=150÷2.5=60千米/小时。行驶1千米需要的时间=时间÷路程=2.5÷150≈0.017小时（或1分钟）。注意：这两个问题的被除数和除数是相反的。'}));
+    templates.push(()=>({type:'app',q:'一辆汽车2.5小时行驶了150千米，平均每小时行驶多少千米？行驶1千米需要多少分钟？',ans:'平均每小时行驶60千米，行驶1千米需要1分钟',explain:'速度=路程÷时间=150÷2.5=60千米/小时。行驶1千米需要的时间=时间÷路程=2.5÷150×60=1分钟。注意：求速度用"路程÷时间"，求行驶1千米的时间用"时间÷路程"，两者的被除数和除数是相反的。'}));
     templates.push(()=>({type:'app',q:'用一根长25.2米的绳子围成一个正方形，这个正方形的边长是多少米？面积是多少平方米？',ans:'边长6.3米，面积39.69平方米',explain:'正方形的周长=边长×4，所以边长=周长÷4=25.2÷4=6.3米。正方形的面积=边长×边长=6.3×6.3=39.69平方米。'}));
   }
   
@@ -7033,7 +7033,45 @@ function checkAnswer(userAns){
   if(q.type==='choice'){
     isCorrect=userAns===q.ans;
   }else{
-    isCorrect=String(userAns).trim()===String(q.ans).trim();
+    // 填空题/计算题/应用题：规范化答案后比较
+    const normalize = (s) => {
+      return String(s).trim()
+        .replace(/，/g, ',')  // 中文逗号转英文
+        .replace(/、/g, ' ')   // 中文顿号转空格
+        .replace(/\s+/g, ' ')  // 多个空格转一个
+        .replace(/,/g, ' ')    // 逗号转空格
+        .replace(/。/g, '')     // 去掉句号
+        .replace(/\.$/, '')     // 去掉结尾句号
+        .toLowerCase();
+    };
+    const userNorm = normalize(userAns);
+    const ansNorm = normalize(q.ans);
+    // 直接比较
+    if(userNorm === ansNorm){
+      isCorrect = true;
+    }else{
+      // 支持多个答案用空格分隔的情况，逐个比较
+      const userParts = userNorm.split(' ').filter(s=>s);
+      const ansParts = ansNorm.split(' ').filter(s=>s);
+      if(userParts.length === ansParts.length && userParts.length > 0){
+        let allMatch = true;
+        for(let i=0; i<userParts.length; i++){
+          // 数字比较：允许微小误差
+          const uNum = parseFloat(userParts[i]);
+          const aNum = parseFloat(ansParts[i]);
+          if(!isNaN(uNum) && !isNaN(aNum)){
+            if(Math.abs(uNum - aNum) > 0.01){
+              allMatch = false;
+              break;
+            }
+          }else if(userParts[i] !== ansParts[i]){
+            allMatch = false;
+            break;
+          }
+        }
+        isCorrect = allMatch;
+      }
+    }
   }
   es.correct[es.current]=isCorrect;
   if(!isCorrect){
@@ -7147,13 +7185,20 @@ function startPractice(){
     else questions[i].diff = 'hard';
   }
   
-  // 分配分数
+  // 分配分数 - 动态计算确保总分100分
+  const typeWeights = {choice: 1, fill: 1.5, calc: 2, app: 3};
+  let totalWeight = 0;
+  questions.forEach(q => { totalWeight += typeWeights[q.type] || 1; });
   questions=questions.map(q=>{
-    let score=3;
-    if(q.type==='calc')score=5;
-    if(q.type==='app')score=q.diff==='hard'?8:6;
+    const weight = typeWeights[q.type] || 1;
+    const score = Math.round((weight / totalWeight) * 100 * 10) / 10; // 保留1位小数
     return {...q,score};
   });
+  // 调整最后一题分数确保总分正好100
+  let sumScore = questions.reduce((sum,q)=>sum+q.score,0);
+  if(questions.length > 0){
+    questions[questions.length-1].score += Math.round((100 - sumScore) * 10) / 10;
+  }
   
   STATE.examState={
     type: 'practice',
