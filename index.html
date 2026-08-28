@@ -6275,7 +6275,6 @@ function renderStudyPage(){
     finalContent = mainContent;
   }
   
-  return renderHeader(`${unit.name}`, unit.topics, true)+
   // 标记知识点已读（进入本页面即视为已学习）
   markKnowledgeRead(grade, STATE.selectedTerm, STATE.selectedSubject, unitId);
   
