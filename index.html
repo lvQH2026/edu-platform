@@ -1625,7 +1625,30 @@ a{text-decoration:none;color:inherit}
 .xsc-review-a{ font-size: 12px; color: #555; line-height: 1.7; }
 .xsc-review-e{ background: #f8f9fb; border-radius: var(--radius-sm); padding: 8px 10px; font-size: 12px; color: #444; margin-top: 8px; line-height: 1.7; }
 
+
+/* ===== 红笔手写分数（确认版：楷书 + 分数下双横线）===== */
+.redpen-score-card{ background: var(--bg-card); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); text-align: center; margin-bottom: var(--space-md); }
+.redpen-score-main{ display: flex; align-items: flex-start; justify-content: center; gap: 12px; }
+.redpen-big-wrap{ display: inline-block; text-align: center; }
+.redpen-big{ font-family: 'Ma Shan Zheng', cursive; font-weight: 400; color: #e53935; font-size: 58px; line-height: 1; transform: rotate(-2deg); display: inline-block; }
+.redpen-total-unit{ font-family: 'Ma Shan Zheng', cursive; color: #e53935; font-size: 18px; padding-top: 14px; transform: rotate(-2deg); }
+.redpen-level{ font-family: 'Ma Shan Zheng', cursive; color: #e53935; font-size: 20px; margin-top: 8px; font-weight: 400; }
+.redpen-dline{ position: relative; height: 15px; margin-top: 5px; }
+.redpen-dline span{ position: absolute; left: 0; right: 0; height: 4px; background: #e53935; border-radius: 4px; }
+.redpen-dline span.r1{ top: 0; transform: rotate(-1.6deg); }
+.redpen-dline span.r2{ top: 9px; transform: rotate(1.2deg); width: 92%; }
+.redpen-dline.thin{ height: 9px; margin-top: 3px; }
+.redpen-dline.thin span{ height: 2px; }
+.redpen-dline.thin span.r1{ top: 0; transform: rotate(-1deg); }
+.redpen-dline.thin span.r2{ top: 5px; transform: rotate(.8deg); width: 88%; }
+.redpen-mark{ font-family: 'Ma Shan Zheng', cursive; font-size: 17px; color: #e53935; }
+.redpen-pts{ font-family: 'Ma Shan Zheng', cursive; font-weight: 400; color: #e53935; line-height: 1; }
+.redpen-comment{ font-family: 'Ma Shan Zheng', cursive; font-weight: 400; color: #e53935; font-size: 16px; }
+.xsc-score-item .pts-wrap{ display: inline-flex; flex-direction: column; align-items: flex-end; margin-left: auto; }
+
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+
 </head>
 <body>
 <div class="app" id="app">
@@ -14952,34 +14975,33 @@ function renderExamResult(){
   const accuracy = (state.correctCount / state.questions.length * 100).toFixed(1);
 
   if(!state.scoreConfirmed){
-    // ========== 阶段一：批改成绩页（模拟真实老师批改，含总分与各题得分）==========
-    let level = '', levelColor = '', comment = '';
-    if(state.totalScore >= 90){ level='优秀'; levelColor='#27ae60'; comment='太棒了！基础扎实，继续保持这份专注，向满分冲刺！'; }
-    else if(state.totalScore >= 80){ level='良好'; levelColor='#3498db'; comment='很不错！大部分知识都掌握了，错题弄懂后再练一次会更稳。'; }
-    else if(state.totalScore >= 60){ level='及格'; levelColor='#f39c12'; comment='基本达标。请认真看下方各题得分与解析，把薄弱点补上。'; }
-    else{ level='需努力'; levelColor='#e74c3c'; comment='别灰心！仔细看每道题解析，把错题弄明白，下次一定能进步！'; }
+    // ========== 阶段一：批改成绩页（红笔手写分数 + 双横线，模拟老师红笔批改）==========
+    let level = '', comment = '';
+    if(state.totalScore >= 90){ level='优秀'; comment='太棒了！基础扎实，继续保持这份专注，向满分冲刺！'; }
+    else if(state.totalScore >= 80){ level='良好'; comment='很不错！大部分知识都掌握了，错题弄懂后再练一次会更稳。'; }
+    else if(state.totalScore >= 60){ level='及格'; comment='基本达标。请认真看下方各题得分与解析，把薄弱点补上。'; }
+    else{ level='需努力'; comment='别灰心！仔细看每道题解析，把错题弄明白，下次一定能进步！'; }
 
     const itemHtml = state.questions.map(function(q,i){
       const got = state.correct[i] ? q.score : 0;
       const mark = state.correct[i] ? '✓' : '✗';
-      const markColor = state.correct[i] ? '#27ae60' : '#e74c3c';
       const typeName = q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题';
       return '<div class="xsc-score-item">' +
         '<span class="num">第'+(i+1)+'题</span>' +
         '<span class="type">'+typeName+'</span>' +
-        '<span class="mark" style="color:'+markColor+'">'+mark+'</span>' +
-        '<span class="pts" style="color:'+markColor+'">'+got+' / '+q.score+' 分</span>' +
+        '<span class="redpen-mark">'+mark+'</span>' +
+        '<span class="pts-wrap"><span class="redpen-pts">'+got+'/'+q.score+'分</span><div class="redpen-dline thin"><span class="r1"></span><span class="r2"></span></div></span>' +
         '</div>';
     }).join('');
 
     return '<div class="result-header"><div class="result-title">📝 '+state.title+' · 批改结果</div></div>' +
       '<div class="result-container">' +
-        '<div class="xsc-result-card">' +
-          '<div class="xsc-score-ring" style="border-color:'+levelColor+'">' +
-            '<div class="xsc-score-num" style="color:'+levelColor+'">'+state.totalScore+'</div>' +
-            '<div class="xsc-score-total">/ 100分</div>' +
+        '<div class="redpen-score-card">' +
+          '<div class="redpen-score-main">' +
+            '<span class="redpen-big-wrap"><span class="redpen-big">'+state.totalScore+'</span><div class="redpen-dline"><span class="r1"></span><span class="r2"></span></div></span>' +
+            '<span class="redpen-total-unit">/ 100分</span>' +
           '</div>' +
-          '<div class="xsc-level" style="color:'+levelColor+'">'+level+'</div>' +
+          '<div class="redpen-level">'+level+'</div>' +
         '</div>' +
         '<div class="xsc-stats">' +
           '<div class="xsc-stat"><div class="v" style="color:#27ae60">'+state.correctCount+'</div><div class="l">答对题数</div></div>' +
@@ -14987,7 +15009,7 @@ function renderExamResult(){
           '<div class="xsc-stat"><div class="v">'+accuracy+'%</div><div class="l">正确率</div></div>' +
           '<div class="xsc-stat"><div class="v" style="font-size:14px">'+minutes+'分'+seconds+'秒</div><div class="l">用时</div></div>' +
         '</div>' +
-        '<div class="xsc-comment">💬 老师批语：'+comment+'</div>' +
+        '<div class="xsc-comment">💬 老师批语：<span class="redpen-comment">'+comment+'</span></div>' +
         '<div class="xsc-section-title">📋 各题得分</div>' +
         '<div class="xsc-score-list">'+itemHtml+'</div>' +
         '<div class="result-actions" style="margin-top:18px">' +
@@ -14999,7 +15021,7 @@ function renderExamResult(){
   // ========== 阶段二：答案与解析页（用户点"确认"后进入）==========
   return '<div class="result-header"><div class="result-title">'+state.title+' · 答案与解析</div></div>' +
     '<div class="result-container">' +
-      '<div class="xsc-summary-bar">总分 <b>'+state.totalScore+'</b> / 100 分 · 答对 '+state.correctCount+' 题 · 正确率 '+accuracy+'% · 用时 '+minutes+'分'+seconds+'秒</div>' +
+      '<div class="xsc-summary-bar">总分 <b class="redpen-pts" style="font-size:20px;margin:0 3px">'+state.totalScore+'</b> / 100 分 · 答对 '+state.correctCount+' 题 · 正确率 '+accuracy+'% · 用时 '+minutes+'分'+seconds+'秒</div>' +
       '<div class="xsc-section-title">📝 逐题答案与解析</div>' +
       state.questions.map(function(q,i){
         const typeName = q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题';
