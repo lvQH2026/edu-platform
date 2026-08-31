@@ -11990,9 +11990,184 @@ function render(){
     case 'english': html=renderEnglishPage(); break;
     case 'phonics-level': html=renderPhonicsLevelPage(); break;
     case 'ipa-detail': html=renderIPADetailPage(); break;
+    case 'knowledge': html=renderKnowledgePage(); break;
+    case 'weak': html=renderWeakPage(); break;
   }
   app.innerHTML=html;
   bindEvents();
+}
+
+
+// ============================================
+// 知识库页（底部"知识点"导航接通）
+// ============================================
+function renderKnowledgePage(){
+  if(!STATE.knowledgeSubject) STATE.knowledgeSubject = STATE.selectedSubject || 'math';
+  if(!STATE.knowledgeGrade) STATE.knowledgeGrade = STATE.selectedGrade || '5';
+  if(!STATE.knowledgeTerm) STATE.knowledgeTerm = STATE.selectedTerm || 'up';
+  var subjTabs = ['chinese','math','english'].map(function(s){
+    var nm = {chinese:'语文',math:'数学',english:'英语'}[s];
+    return '<div class="review-module-tab'+(STATE.knowledgeSubject===s?' active':'')+'" onclick="setKSubject(\''+s+'\')">'+nm+'</div>';
+  }).join('');
+  var gradeTabs = '';
+  for(var g=1;g<=6;g++){
+    gradeTabs += '<div class="review-module-tab'+(String(STATE.knowledgeGrade)===String(g)?' active':'')+'" onclick="setKGrade('+g+')">'+g+'年级</div>';
+  }
+  var termTabs = ['up','down'].map(function(t){
+    var nm = t==='up'?'上册':'下册';
+    return '<div class="review-module-tab'+(STATE.knowledgeTerm===t?' active':'')+'" onclick="setKTerm(\''+t+'\')">'+nm+'</div>';
+  }).join('');
+  var units = [];
+  try{ units = CURRICULUM[STATE.knowledgeGrade][STATE.knowledgeTerm][STATE.knowledgeSubject].units || []; }catch(e){}
+  var unitHtml = units.map(function(u){
+    return '<div class="unit-item" onclick="toggleKbUnit(\''+u.id+'\')"><div class="unit-num">'+(u.name||'').replace('单元','').replace('第','')+'</div><div class="unit-info"><div class="unit-name">'+u.name+'<span style="font-size:11px;color:#999;margin-left:8px">'+(u.topics?u.topics.slice(0,30):'')+'</span></div><div style="font-size:12px;color:#4F6DF5">点击查看知识点 ▼</div><div id="kb_'+u.id+'" class="kb-body" style="display:none"></div></div></div>';
+  }).join('');
+  var termName = STATE.knowledgeTerm==='up'?'上册':'下册';
+  var subjName = {chinese:'语文',math:'数学',english:'英语'}[STATE.knowledgeSubject];
+  var isEnglish = STATE.knowledgeSubject==='english';
+  var bodyHtml = isEnglish
+    ? '<div style="text-align:center;color:#999;padding:40px 20px;background:#F8FAFC;border-radius:12px;border:1px dashed #CBD5E1"><div style="font-size:15px;color:#475569;margin-bottom:8px">🔤 英语为独立版块</div><div style="font-size:13px;line-height:1.8">自然拼读 · 国际音标 · 同步课程</div><div style="font-size:12px;margin-top:8px;color:#64748B">请从首页进入「英语」学习</div></div>'
+    : (unitHtml?'<div class="unit-list">'+unitHtml+'</div>':'<div style="text-align:center;color:#999;padding:30px">该年级暂无单元数据</div>');
+  return renderHeader('知识库', '按单元查看知识点 / 万能公式 / 答题方法', true) +
+    '<div class="page">'+
+      '<div style="margin-bottom:8px"><div class="section-title"><span class="icon">📖</span>科目</div><div class="review-module-tabs">'+subjTabs+'</div></div>'+
+      '<div style="margin-bottom:8px"><div class="section-title"><span class="icon">🏫</span>年级</div><div class="review-module-tabs">'+gradeTabs+'</div></div>'+
+      '<div style="margin-bottom:12px"><div class="section-title"><span class="icon">📚</span>册别</div><div class="review-module-tabs">'+termTabs+'</div></div>'+
+      '<div class="section-title"><span class="icon">📋</span>'+subjName+' · '+STATE.knowledgeGrade+'年级'+termName+' 单元（点击展开）</div>'+
+      bodyHtml +
+    '</div>'+renderTabBar('knowledge');
+}
+function setKSubject(s){ STATE.knowledgeSubject=s; render(); }
+function setKGrade(g){ STATE.knowledgeGrade=String(g); render(); }
+function setKTerm(t){ STATE.knowledgeTerm=t; render(); }
+function toggleKbUnit(unitId){
+  var body = document.getElementById('kb_'+unitId);
+  if(!body) return;
+  if(body.style.display === 'block'){ body.style.display='none'; return; }
+  var grade=STATE.knowledgeGrade, term=STATE.knowledgeTerm, subject=STATE.knowledgeSubject;
+  var kb=null, unit=null;
+  try{
+    var us=CURRICULUM[grade][term][subject].units;
+    for(var i=0;i<us.length;i++){ if(us[i].id===unitId){ unit=us[i]; break; } }
+    var key = grade+'-'+term+'-'+subject+'-'+unitId;
+    kb = KNOWLEDGE_BASE[key];
+    if(!kb && unit) kb = generateKnowledge(grade, term, subject, unit);
+  }catch(e){}
+  var html='';
+  if(kb && kb.summary) html += '<div class="knowledge-section"><h3><span class="icon">📌</span>知识点总结</h3><div class="content">'+kb.summary+'</div></div>';
+  if(kb && kb.formulas) html += '<div class="knowledge-section"><h3><span class="icon">🔑</span>万能公式</h3><div class="content">'+kb.formulas.map(function(f){return '<div class="formula">'+f+'</div>';}).join('')+'</div></div>';
+  if(kb && kb.methods) html += '<div class="knowledge-section"><h3><span class="icon">💡</span>答题方法</h3><div class="content">'+kb.methods.map(function(m,i){return '<p><span class="highlight">方法'+(i+1)+'</span> '+m+'</p>';}).join('')+'</div></div>';
+  body.innerHTML = html || '<div style="color:#999;padding:10px">本单元暂无知识点内容</div>';
+  body.style.display='block';
+  body.style.marginTop='10px';
+  body.style.padding='12px';
+  body.style.background='#F8FAFC';
+  body.style.borderRadius='10px';
+  body.style.border='1px solid #E2E8F0';
+}
+
+// ============================================
+// 薄弱专项突破页（首页快捷入口接通）
+// ============================================
+function renderWeakPage(){
+  var weakList = [];
+  Object.keys(STATE.userData.unitProgress||{}).forEach(function(key){
+    var p = STATE.userData.unitProgress[key];
+    if(!p || !p.practiceTotal || p.practiceTotal<5) return;
+    var acc = p.practiceCorrect/p.practiceTotal;
+    if(acc < 0.75){
+      var parts = key.split('-');
+      var grade=parts[0], term=parts[1], subject=parts[2], unitId=parts[3];
+      try{
+        var us = CURRICULUM[grade][term][subject].units;
+        var un = unitId;
+        for(var i=0;i<us.length;i++){ if(us[i].id===unitId){ un=us[i].name; break; } }
+        weakList.push({grade:grade,term:term,subject:subject,unitId:unitId,name:{chinese:'语文',math:'数学',english:'英语'}[subject],unitName:un,acc:Math.round(acc*100)});
+      }catch(e){}
+    }
+  });
+  weakList.sort(function(a,b){return a.acc-b.acc;});
+  var items = weakList.map(function(w){
+    var tn = w.term==='up'?'上':'下';
+    return '<div class="unit-item" onclick="startWeakPractice(\''+w.grade+'\',\''+w.term+'\',\''+w.subject+'\',\''+w.unitId+'\')"><div class="unit-num">'+w.name[0]+'</div><div class="unit-info"><div class="unit-name">'+w.grade+'年级'+tn+'册 · '+w.unitName+'</div><div class="weak-progress" style="margin:8px 0"><div class="weak-bar" style="width:'+w.acc+'%;background:#e74c3c"></div></div><div style="font-size:12px;color:#e74c3c;font-weight:600">正确率 '+w.acc+'% · 点击开始专项练习 →</div></div></div>';
+  }).join('');
+  var body = weakList.length ? items : '<div style="text-align:center;color:#999;padding:40px 20px">🎉 暂无薄弱单元，继续保持！</div>';
+  return renderHeader('薄弱专项突破', '自动识别正确率低于75%的单元，一键专项练习', true) +
+    '<div class="page">'+
+      '<div class="section-title"><span class="icon">🎯</span>需加强单元（按正确率从低到高）</div>'+
+      (weakList.length?'<div class="unit-list">'+items+'</div>':'<div style="text-align:center;color:#999;padding:40px 20px">🎉 暂无薄弱单元，继续保持！</div>')+
+      '<div style="margin-top:14px;font-size:12px;color:#999">提示：先做题积累数据，系统会自动识别薄弱单元。专项练习的错题会进入错题本。</div>'+
+    '</div>'+renderTabBar('grade');
+}
+function startWeakPractice(grade,term,subject,unitId){
+  STATE.selectedGrade=grade; STATE.selectedTerm=term; STATE.selectedSubject=subject; STATE.selectedUnit=unitId;
+  markKnowledgeRead(grade,term,subject,unitId);
+  startPractice();
+}
+
+// ============================================
+// 家长端：发送鼓励 / 导出报告（真实现）
+// ============================================
+function sendEncouragement(){
+  var msgs = ['加油！你很棒！','坚持就是胜利！','今天的努力，明天的收获！','你比昨天更棒了！','相信自己，你可以的！','继续加油，妈妈/爸爸为你骄傲！'];
+  var text = msgs[Math.floor(Math.random()*msgs.length)];
+  var d = new Date();
+  var ds = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+  try{ localStorage.setItem('edu_parent_msg', JSON.stringify({text:text, date:ds})); }catch(e){}
+  showGlobalTip('💌 已发送鼓励给孩子：'+text);
+}
+function exportReport(){
+  var lines = [];
+  lines.push('===== 小学远程学习平台 · 学习报告 =====');
+  lines.push('学生：' + STATE.userData.name);
+  lines.push('生成时间：' + new Date().toLocaleString());
+  lines.push('');
+  lines.push('【学习概况】');
+  lines.push('连续打卡：' + STATE.userData.streak + ' 天');
+  lines.push('累计学习时长：' + STATE.userData.totalMinutes + ' 分钟');
+  var tp=0, tc=0, tu=0, done=0;
+  Object.keys(STATE.userData.unitProgress||{}).forEach(function(k){
+    var p = STATE.userData.unitProgress[k];
+    if(p && p.practiceTotal){ tp+=p.practiceTotal; tc+=p.practiceCorrect; tu++; if(p.practiceCompleted) done++; }
+  });
+  lines.push('已完成单元：' + done + '/' + tu);
+  lines.push('累计练习：' + tp + ' 题');
+  lines.push('平均正确率：' + (tp?Math.round(tc/tp*100):0) + '%');
+  lines.push('');
+  lines.push('【薄弱单元（正确率<75%）】');
+  var weak = 0;
+  Object.keys(STATE.userData.unitProgress||{}).forEach(function(k){
+    var p = STATE.userData.unitProgress[k];
+    if(p && p.practiceTotal>=5 && p.practiceCorrect/p.practiceTotal<0.75){
+      var parts = k.split('-');
+      weak++;
+      var subj = parts[2]==='chinese'?'语文':parts[2]==='math'?'数学':'英语';
+      var tn = parts[1]==='up'?'上':'下';
+      lines.push('  ' + parts[0]+'年级'+tn+'册 '+subj+' '+parts[3]);
+    }
+  });
+  if(!weak) lines.push('  无（继续保持！）');
+  lines.push('');
+  lines.push('【最近考试】');
+  var hist = STATE.userData.examHistory || [];
+  if(hist.length){
+    hist.slice(-5).forEach(function(h){
+      lines.push('  ' + (h.date||'').slice(0,10) + ' ' + (h.title||h.type||'') + '：' + h.score + '分（' + h.correct + '/' + h.total + '）');
+    });
+  } else {
+    lines.push('  暂无考试记录');
+  }
+  try{
+    var blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '学习报告_' + Date.now() + '.txt';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ try{URL.revokeObjectURL(a.href);}catch(e){} }, 3000);
+    showGlobalTip('📄 学习报告已导出');
+  }catch(e){
+    alert('导出失败：' + e.message);
+  }
 }
 
 function renderHeader(title,sub='',showBack=false){
@@ -12026,6 +12201,10 @@ function renderGradePage(){
   tasksHtml += '<div class="task-item"><div class="task-checkbox"></div><div class="task-info"><div class="task-name">复习小数乘法</div><div class="task-meta">15分钟 · 数学</div></div><div class="task-progress"><div class="fill" style="width:60%"></div></div></div>';
   tasksHtml += '<div class="task-item"><div class="task-checkbox"></div><div class="task-info"><div class="task-name">完成单元练习</div><div class="task-meta">30题 · 第一单元</div></div><div class="task-progress"><div class="fill" style="width:0%"></div></div></div>';
   
+  // 家长寄语
+  var parentMsgHtml = '';
+  try{ var pm = JSON.parse(localStorage.getItem('edu_parent_msg')||'null'); if(pm && pm.text){ parentMsgHtml = '<div class="parent-msg" style="margin-top:8px;padding:8px 12px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;font-size:13px;color:#9A3412">💌 家长寄语：'+pm.text+'（'+pm.date+'）</div>'; } }catch(e){}
+  
   // 学习数据
   var statsHtml = '<div class="stat-card"><div class="stat-num">'+STATE.userData.streak+'</div><div class="stat-label">连续打卡</div><div class="stat-trend up">↑ 10%</div></div>';
   statsHtml += '<div class="stat-card"><div class="stat-num">'+STATE.userData.totalMinutes+'</div><div class="stat-label">学习时长</div><div class="stat-trend up">↑ 15%</div></div>';
@@ -12042,12 +12221,12 @@ function renderGradePage(){
     continueAction = "STATE.selectedGrade='" + STATE.lastStudy.grade + "';STATE.selectedTerm='" + STATE.lastStudy.term + "';STATE.selectedSubject='" + STATE.lastStudy.subject + "';STATE.selectedUnit='" + STATE.lastStudy.unit + "';navigate('study')";
   }
   var quickHtml = '<div class="quick-action" onclick="' + continueAction + '"><div class="qa-icon">▶️</div><div class="qa-name">继续学习</div><div class="qa-desc">' + continueDesc + '</div></div>';
-  quickHtml += '<div class="quick-action" onclick="navigate(\'wrongbook\')"><div class="qa-icon">❌</div><div class="qa-name">错题复习</div><div class="qa-desc">12题待复习</div></div>';
-  quickHtml += '<div class="quick-action" onclick="alert(\'薄弱点专项训练功能开发中\')"><div class="qa-icon">🎯</div><div class="qa-name">薄弱突破</div><div class="qa-desc">分数运算</div></div>';
-  quickHtml += '<div class="quick-action" onclick="showExamModal()"><div class="qa-icon">📝</div><div class="qa-name">模拟考试</div><div class="qa-desc">选择年级科目</div></div>';
+  quickHtml += '<div class="quick-action" onclick="navigate(\'paperGrade\')"><div class="qa-icon">📷</div><div class="qa-name">试卷批改</div><div class="qa-desc">拍卷AI批改</div></div>';
+  quickHtml += '<div class="quick-action" onclick="navigate(\'weak\')"><div class="qa-icon">🎯</div><div class="qa-name">薄弱突破</div><div class="qa-desc">薄弱单元专练</div></div>';
+  quickHtml += '<div class="quick-action" onclick="showExamModal()"><div class="qa-icon">📝</div><div class="qa-name">综合模拟</div><div class="qa-desc">模拟小升初综合卷</div></div>';
   
   return '<div class="page" style="padding-top:0">'+
-    '<div class="dashboard-welcome"><div class="welcome-title">👋 你好，'+STATE.userData.name+'！</div><div class="welcome-sub">今天是学习的好日子，继续加油哦！</div><div class="streak-badge">🔥 连续打卡 '+STATE.userData.streak+' 天</div></div>'+
+    '<div class="dashboard-welcome"><div class="welcome-title">👋 你好，'+STATE.userData.name+'！</div><div class="welcome-sub">今天是学习的好日子，继续加油哦！</div>'+parentMsgHtml+'<div class="streak-badge">🔥 连续打卡 '+STATE.userData.streak+' 天</div></div>'+
     '<div class="today-tasks"><div class="section-title"><span class="icon">📋</span>今日任务</div>'+tasksHtml+'</div>'+
     '<div class="stats-grid">'+statsHtml+'</div>'+
     '<div class="section-title"><span class="icon">⚡</span>快捷入口</div><div class="quick-actions">'+quickHtml+'</div>'+
@@ -12191,7 +12370,7 @@ function renderUnitPage(){
     items+=`<div class="unit-item" data-unit="${u.id}" style="position:relative">
       <div class="unit-num">${i+1}</div>
       <div class="unit-info" style="flex:1">
-        <div class="unit-name">${u.name}：${u.topics}</div>
+        <div class="unit-name">${u.name}${(STATE.selectedSubject==='math'&&/总复习/.test(u.name))?'<span style="font-size:10px;color:#e67e22;background:#fef3e2;padding:0 6px;border-radius:8px;margin-left:6px">期末综合</span>':''}：${u.topics}</div>
         ${u.writing?`<div class="unit-desc">习作：${u.writing}</div>`:''}
         <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="flex:1;min-width:100px;height:6px;background:#eee;border-radius:3px;overflow:hidden">
@@ -12549,7 +12728,7 @@ function renderStudyPage(){
   tabHtml += '<div class="knowledge-tab" data-tab="2" onclick="switchKnowledgeTab(2)">💡 答题方法</div>';
   if(STATE.selectedSubject === 'chinese') tabHtml += '<div class="knowledge-tab" data-tab="3" onclick="switchKnowledgeTab(3)">🗺️ 思维导图</div>';
   if(STATE.selectedSubject === 'math') tabHtml += '<div class="knowledge-tab" data-tab="4" onclick="switchKnowledgeTab(4)">🎮 互动演示</div>';
-  tabHtml += '<div class="knowledge-tab" data-tab="'+reviewTabIndex+'" onclick="switchKnowledgeTab('+reviewTabIndex+')">📚 总复习</div>';
+  tabHtml += '<div class="knowledge-tab" data-tab="'+reviewTabIndex+'" onclick="switchKnowledgeTab('+reviewTabIndex+')">📚 本册复习</div>';
   tabHtml += '</div>';
   
   // Tab内容区域
@@ -12814,7 +12993,7 @@ function renderParentPage(){
       ${recP.length > 0 ? `
       <div class="knowledge-section"><h3><span class="icon">📝</span>最近练习与考试记录</h3><div class="content"><div class="practice-list">${recP.map(p=>`<div class="practice-item"><div class="practice-type ${p.ty==='考试'?'exam':'practice'}">${p.ty}</div><div class="practice-info"><div class="practice-title">${p.s} · ${p.u}</div><div class="practice-meta">${p.ti} · 答对${p.c}/${p.tq}题</div></div><div class="practice-score ${p.sc>=80?'good':p.sc>=60?'ok':'bad'}">${p.sc}<span>分</span></div></div>`).join('')}</div></div></div>
       ` : ''}
-      <div class="parent-actions"><button class="btn btn-primary" onclick="navigate('paperGrade')">📷 试卷批改</button><button class="btn btn-primary" onclick="alert('已发送鼓励消息给孩子：加油！你很棒！')">💪 发送鼓励</button><button class="btn btn-outline" onclick="alert('学习报告已生成，可导出PDF')">📄 导出报告</button></div>
+      <div class="parent-actions"><button class="btn btn-primary" onclick="navigate('paperGrade')">📷 试卷批改</button><button class="btn btn-primary" onclick="sendEncouragement()">💪 发送鼓励</button><button class="btn btn-outline" onclick="exportReport()">📄 导出报告</button></div>
     </div>`+renderTabBar('parent');
 }
 
@@ -13336,7 +13515,7 @@ function renderTabBar(active){
     <div class="tab-item ${active==='wrongbook'?'active':''}" onclick="navigate('wrongbook')">
       <div class="tab-icon">❌</div><div>错题</div>
     </div>
-    <div class="tab-item" onclick="alert('知识点功能开发中')">
+    <div class="tab-item ${active==='knowledge'?'active':''}" onclick="navigate('knowledge')">
       <div class="tab-icon">📚</div><div>知识点</div>
     </div>
     <div class="tab-item ${active==='parent'?'active':''}" onclick="navigate('parent')">
@@ -14364,7 +14543,7 @@ function renderReviewPanel(){
   }
 
   return '<div style="margin-top:16px">' +
-    '<div style="text-align:center;margin-bottom:16px"><span style="font-size:18px;font-weight:700;color:#333">📚 '+grade+'年级'+termName+' '+subjName+' · 全册总复习</span></div>' +
+    '<div style="text-align:center;margin-bottom:16px"><span style="font-size:18px;font-weight:700;color:#333">📚 '+grade+'年级'+termName+' '+subjName+' · 本册复习</span></div>' +
     moduleTabs + moduleContent + '</div>';
 }
 
