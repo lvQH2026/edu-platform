@@ -6065,6 +6065,7 @@ function generateMathQuestions(grade,term,unitId,count=100){
     q.id=`${unitId}_${String(i+1).padStart(2,'0')}`;
     q.diff=diffs[i%diffs.length];
     autoIllustrate(q, unitId);
+    dedupeChoiceOpts(q);
     questions.push(q);
   }
   return questions;
@@ -6197,8 +6198,8 @@ function getMathTemplates(grade,term,unitId){
     templates.push(()=>({type:'choice',q:'确定物体位置需要哪两个条件？',opts:['方向和距离','方向和角度','距离和长度','角度和长度'],ans:0,explain:'确定物体位置需要两个条件：方向（包括角度）和距离。只有方向不知道距离，或只有距离不知道方向，都无法准确确定位置。'}));
     templates.push(()=>({type:'choice',q:'小明家在学校的北偏东30°方向500米处，那么学校在小明家的什么方向？',opts:['南偏西30°500米','南偏东30°500米','北偏西30°500米','西偏南30°500米'],ans:0,explain:'两个地点的位置关系是相对的。北对南，东对西，角度和距离不变。所以学校在小明家的南偏西30°方向500米处。'+geoDirection(30)}));
     templates.push(()=>({type:'choice',q:'图书馆在广场的东偏北40°方向，也可以说成？',opts:['北偏东50°','北偏东40°','西偏南40°','南偏西50°'],ans:0,explain:'东偏北40° = 从正东方向向北偏转40°。因为正东和正北之间是90°，所以从正北方向向东偏转就是90°-40°=50°，即北偏东50°。'+geoDirection(50)}));
-    templates.push(()=>({type:'fill',q:'地图上通常是上____下____，左____右____',ans:'北南西东',explain:'地图的方向规定：上北下南，左西右东。这是通用的地图方向标。'}));
-    templates.push(()=>({type:'fill',q:'小红从家出发，先向东走200米，再向北走150米到学校。小红家在学校的____偏____方向',ans:'南西',explain:'从学校看小红家，方向相反：东的反方向是西，北的反方向是南。所以小红家在学校的南偏西方向。'}));
+    templates.push(()=>({type:'fill',q:'地图上通常是上____下____，左____右____',ans:'北 南 西 东',explain:'地图的方向规定：上北下南，左西右东。这是通用的地图方向标。'}));
+    templates.push(()=>({type:'fill',q:'小红从家出发，先向东走200米，再向北走150米到学校。小红家在学校的____偏____方向',ans:'南 西',explain:'从学校看小红家，方向相反：东的反方向是西，北的反方向是南。所以小红家在学校的南偏西方向。'}));
     templates.push(()=>({type:'app',q:'在比例尺为1:10000的地图上，量得小明家到学校的距离是5厘米。小明家到学校的实际距离是多少米？',ans:'500',explain:'比例尺1:10000表示图上1厘米代表实际10000厘米。5厘米代表实际5×10000=50000厘米=500米。'}));
     templates.push(()=>({type:'app',q:'一艘轮船从港口出发，向北偏东60°方向行驶40千米到达A岛，然后从A岛向南偏东30°方向行驶30千米到达B岛。港口到B岛的直线距离大约是多少千米？',ans:'50',explain:'根据题意画图，港口到A岛40千米，A岛到B岛30千米，两段路线夹角90°（60°+30°=90°），构成直角三角形。港口到B岛=√(40²+30²)=√2500=50千米。'+geoDirection(60)}));
     // 扩充题目
@@ -6685,7 +6686,7 @@ function getMathTemplates(grade,term,unitId){
     templates.push(()=>({type:'app',q:'画一个三角形ABC，然后绕点A顺时针旋转90°，画出旋转后的图形。（描述旋转方法）',ans:'旋转方法：1.确定旋转中心A；2.确定旋转方向顺时针；3.确定旋转角度90°；4.分别把线段AB、AC绕点A顺时针旋转90°，得到AB\'、AC\'；5.连接B\'C\'，三角形AB\'C\'就是旋转后的图形',explain:'画旋转图形的方法：1.确定旋转中心；2.确定旋转方向和角度；3.把图形的关键点绕旋转中心旋转指定角度，得到对应点；4.按原图形的顺序连接对应点，得到旋转后的图形。'}));
     // 扩充题目
     templates.push(()=>({type:'choice',q:'下面的现象中，属于旋转的是？',opts:['电风扇的转动','电梯的上下运动','汽车在笔直的公路上行驶','推拉抽屉'],ans:0,explain:'旋转是物体绕着一个点或轴做圆周运动。电风扇的转动是绕着中心轴旋转，属于旋转现象。电梯的上下运动、汽车在笔直的公路上行驶、推拉抽屉都是物体沿直线运动，属于平移现象。'}));
-    templates.push(()=>({type:'choice',q:'钟表的指针从"3"绕中心顺时针旋转180°到？',opts:['"9"','"6"','"12"','"6"'],ans:0,explain:'钟表上每相邻两个数字之间的夹角是30°。从"3"顺时针旋转180°，180°÷30°=6，所以旋转了6个数字，3+6=9，到"9"。验证：从3到9正好是半圈，180°，正确。'}));
+    templates.push(()=>({type:'choice',q:'钟表的指针从"3"绕中心顺时针旋转180°到？',opts:['"9"','"6"','"12"','"3"'],ans:0,explain:'钟表上每相邻两个数字之间的夹角是30°。从"3"顺时针旋转180°，180°÷30°=6，所以旋转了6个数字，3+6=9，到"9"。验证：从3到9正好是半圈，180°，正确。'}));
     templates.push(()=>({type:'choice',q:'正方形绕中心至少旋转多少度后能与原图重合？',opts:['90°','45°','180°','360°'],ans:0,explain:'正方形有4条对称轴，绕中心旋转一周360°，能与原图重合4次，所以至少旋转360°÷4=90°后能与原图重合。验证：正方形绕中心旋转90°后，每条边都与相邻的边重合，能与原图重合，正确。'}));
     templates.push(()=>({type:'choice',q:'下面的图形中，绕中心旋转180°后能与原图重合的是？',opts:['平行四边形','等腰三角形','直角梯形','正五边形'],ans:0,explain:'绕中心旋转180°后能与原图重合的图形叫做中心对称图形。平行四边形是中心对称图形，绕中心旋转180°后能与原图重合。等腰三角形、直角梯形、正五边形都不是中心对称图形，绕中心旋转180°后不能与原图重合。'}));
     templates.push(()=>({type:'fill',q:'图形平移后，____、____和____不变，____变了',ans:'形状 大小 方向 位置',explain:'图形平移后，形状、大小和方向都不变，只有位置变了。这是平移的特征。注意：平移和旋转的区别是：平移不改变方向，旋转改变方向。'}));
@@ -6791,6 +6792,7 @@ function generateChineseQuestions(grade,term,unitId,count=100){
     q.id=`${unitId}_${String(i+1).padStart(2,'0')}`;
     q.diff=diffs[i%diffs.length];
     autoIllustrate(q, unitId);
+    dedupeChoiceOpts(q);
     questions.push(q);
   }
   return questions;
@@ -7766,8 +7768,10 @@ function renderPracticePage(){
     optionsHtml=`<div class="options-list">
       ${q.opts.map((o,i)=>`<div class="option-item ${es.answers[es.current]===i?'selected':''}" data-idx="${i}">${String.fromCharCode(65+i)}. ${o}</div>`).join('')}
     </div>`;
-  }else if(q.type==='fill' || q.type==='calc' || q.type==='app'){
-    optionsHtml=`<input type="text" class="fill-input" placeholder="输入你的答案" value="${es.answers[es.current]||''}" id="fillAnswer">`;
+  }else if(q.type==='fill' || q.type==='calc'){
+    optionsHtml=renderAnswerInputs(q, es.answers[es.current], q.type);
+  }else if(q.type==='app'){
+    optionsHtml=`<textarea class="fill-input" placeholder="请写出解题过程和答案" id="fillAnswer">${es.answers[es.current]||''}</textarea>`;
   }
   
   const socrates=es.socratesActive?renderSocrates(es):'';
@@ -8554,6 +8558,230 @@ function bindEvents(){
   }
 }
 
+// ============================================
+// 多空答题 & 选项去重 & 统一判分（2026-08-31 修复）
+// ============================================
+
+// 统计一道题需要几个答案输入框（fill按空数，calc按问数）
+function countAnswerInputs(q){
+  if(q.type==='fill'){
+    const blanks=(q.q.match(/_{2,8}/g)||[]).length;
+    return Math.max(blanks,1);
+  }
+  if(q.type==='calc'){
+    const parts=(q.q.match(/\(\d+\)/g)||[]).length;
+    return Math.max(parts,1);
+  }
+  return 1;
+}
+
+// calc答案按 (1)(2)(3) 切分成每问的答案
+function splitCalcParts(ansText){
+  const parts=[];
+  const re=/(?:^|\s*)\((\d+)\)\s*([\s\S]*?)(?=\s*\((\d+)\)\s*|$)/g;
+  let m;
+  while((m=re.exec(ansText))){ parts.push(m[2].trim()); }
+  return parts.length?parts:[String(ansText).trim()];
+}
+
+// 提取字符串中的全部数字
+function extractNums(str){
+  const nums=[];
+  const re=/-?\d+(?:\.\d+)?/g;
+  let m;
+  while((m=re.exec(String(str)))){ nums.push(parseFloat(m[0])); }
+  return nums;
+}
+
+// 规范化工答案字符串
+function normAnsStr(s){
+  return String(s||'').trim()
+    .replace(/，/g,',')
+    .replace(/、/g,' ')
+    .replace(/\s+/g,' ')
+    .replace(/,/g,' ')
+    .replace(/。/g,'')
+    .replace(/\.$/,'')
+    .toLowerCase();
+}
+
+// 判断题干多空时，fill答案是否按空格拆分对齐空数；若不一致（如"北南西东"），按空数等分重组
+function alignFillAnswer(q){
+  if(q.type!=='fill') return q.ans;
+  const blanks=(q.q.match(/_{2,8}/g)||[]).length;
+  if(blanks<2) return q.ans;
+  const raw=String(q.ans||'').trim();
+  const parts=raw.split(/[\s,，、]/).filter(x=>x);
+  if(parts.length===blanks) return parts.join(' ');
+  if(parts.length===1 && blanks>1){
+    // 答案无分隔，尝试按字符数均分（如"北南西东"->4空，每空1字）
+    const chars=raw.replace(/[^\u4e00-\u9fa5A-Za-z0-9]/g,'');
+    if(chars.length>=blanks && chars.length%blanks===0){
+      const step=chars.length/blanks;
+      const arr=[];
+      for(let i=0;i<blanks;i++) arr.push(chars.slice(i*step,(i+1)*step));
+      return arr.join(' ');
+    }
+  }
+  return q.ans;
+}
+
+// 选择题选项去重：把重复的干扰项替换成不重复的数值
+function makeDistractor(o, used, allOpts){
+  const m=String(o).match(/(-?\d+(?:\.\d+)?)/);
+  if(m){
+    const base=parseFloat(m[1]);
+    const unit=String(o).slice(m[0].length);
+    const deltas=[1,-1,2,-2,3,-3,10,-10,5,-5,0.1,-0.1,20,-20,100,-100,0.01,-0.01,4,-4,6,-6,50,-50];
+    for(const d of deltas){
+      let v=base+d;
+      const str=(Math.abs(v-Math.round(v))<1e-9?String(Math.round(v)):String(Math.round(v*100)/100))+unit;
+      if(!used.has(str) && !allOpts.includes(str) && str!==String(o)) return str;
+    }
+  }
+  let i=1;
+  while(true){
+    const c=String(o)+' ('+i+')';
+    if(!used.has(c)&&!allOpts.includes(c)) return c;
+    i++;
+  }
+}
+function dedupeChoiceOpts(q){
+  if(q.type!=='choice'||!q.opts||q.opts.length<2) return q;
+  const counts={};
+  q.opts.forEach(o=>{const k=String(o); counts[k]=(counts[k]||0)+1;});
+  const dupVals=Object.keys(counts).filter(k=>counts[k]>1);
+  if(!dupVals.length) return q;
+  const correctVal=String(q.opts[q.ans]);
+  const used=new Set();
+  q.opts=q.opts.map((o,i)=>{
+    const k=String(o);
+    if(!used.has(k)){ used.add(k); return o; }
+    const d=makeDistractor(o, used, q.opts.map(x=>String(x)));
+    used.add(String(d));
+    return d;
+  });
+  // 确保正确答案值仍在其索引上
+  if(String(q.opts[q.ans])!==correctVal){
+    const ci=q.opts.map(x=>String(x)).indexOf(correctVal);
+    if(ci>=0){ const tmp=q.opts[q.ans]; q.opts[q.ans]=q.opts[ci]; q.opts[ci]=tmp; }
+  }
+  return q;
+}
+
+// 渲染多空输入框（练习页用）
+function renderAnswerInputs(q, currentAnswer, mode){
+  const n=countAnswerInputs(q);
+  const vals=Array.isArray(currentAnswer)?currentAnswer:(currentAnswer?String(currentAnswer).split(/\s+/).filter(Boolean):[]);
+  let html=`<div class="fill-group" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">`;
+  for(let i=0;i<n;i++){
+    const v=(vals[i]!==undefined&&vals[i]!==null)?String(vals[i]).replace(/"/g,'&quot;'):'';
+    html+=`<input type="text" class="fill-input fill-item" style="width:${n>2?'120px':'150px'};" placeholder="${mode==='calc'?'结果'+(i+1):'第'+(i+1)+'空'}" data-blank="${i}" value="${v}" oninput="updateFillAnswer(${i}, this.value)">`;
+  }
+  html+=`</div>`;
+  return html;
+}
+function updateFillAnswer(idx, val){
+  const es=STATE.examState;
+  if(!es||!es.questions) return;
+  let cur=es.answers[es.current];
+  let arr=Array.isArray(cur)?cur.slice():[];
+  while(arr.length<=idx) arr.push('');
+  arr[idx]=val;
+  es.answers[es.current]=arr;
+  // 练习页：所有空都填上时自动判分（不判的中间态）
+  const q=es.questions[es.current];
+  const n=countAnswerInputs(q);
+  const filled=arr.slice(0,n).every(v=>v!==undefined&&v!==null&&String(v).trim()!=='');
+  if(filled && !es.submitted){
+    checkAnswer(arr);
+  }
+}
+
+// 渲染多空输入框（考试页用）
+function renderExamInputs(q, currentAnswer, mode){
+  const n=countAnswerInputs(q);
+  const vals=Array.isArray(currentAnswer)?currentAnswer:(currentAnswer?String(currentAnswer).split(/\s+/).filter(Boolean):[]);
+  let html=`<div class="fill-group" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">`;
+  for(let i=0;i<n;i++){
+    const v=(vals[i]!==undefined&&vals[i]!==null)?String(vals[i]).replace(/"/g,'&quot;'):'';
+    html+=`<input type="text" class="answer-input fill-item" style="width:${n>2?'120px':'150px'};" placeholder="${mode==='calc'?'结果'+(i+1):'第'+(i+1)+'空'}" value="${v}" oninput="updateExamFillAnswer(${i}, this.value)">`;
+  }
+  html+=`</div>`;
+  return html;
+}
+function updateExamFillAnswer(idx, val){
+  const es=STATE.examState;
+  if(!es||!es.questions) return;
+  let cur=es.answers[es.current];
+  let arr=Array.isArray(cur)?cur.slice():[];
+  while(arr.length<=idx) arr.push('');
+  arr[idx]=val;
+  es.answers[es.current]=arr;
+}
+
+// 判断答案是否已作答（兼容数组）
+function isAnswerAnswered(a){
+  if(Array.isArray(a)) return a.some(v=>v!==null&&v!==undefined&&String(v).trim()!=='');
+  return a!==null&&a!==undefined&&String(a).trim()!=='';
+}
+// 把答案转成展示字符串（数组转空格分隔）
+function answerDisplay(a){
+  if(Array.isArray(a)) return a.map(v=>v||'').join(' ');
+  return a;
+}
+
+// 统一判分：fill（多空）/calc（多问）/app
+function judgeFillAnswer(q, raw){
+  if(q.type==='calc'){
+    const parts=splitCalcParts(alignFillAnswer(q));
+    const userNorm=normAnsStr(raw);
+    const up=userNorm.split(' ').filter(x=>x);
+    if(up.length===parts.length){
+      for(let i=0;i<parts.length;i++){
+        let pa=String(parts[i]);
+        if(pa.includes('=')) pa=pa.split('=').slice(1).join('=');
+        const un=extractNums(up[i]);
+        const an=extractNums(pa);
+        if(an.length===0){
+          if(normAnsStr(up[i])!==normAnsStr(pa)) return false;
+        }else{
+          if(un.length!==an.length) return false;
+          for(let j=0;j<an.length;j++){ if(Math.abs(un[j]-an[j])>0.01) return false; }
+        }
+      }
+      return true;
+    }
+    // 项数不一致：尝试整体数字比较（忽略等号左边的已知数）
+    const allU=userNorm.match(/-?\d+(?:\.\d+)?/g)||[];
+    const allA=parts.map(p=>{
+      let pp=String(p).replace(/^\s*\(\d+\)/,'');
+      if(pp.includes('=')) pp=pp.split('=').slice(1).join('=');
+      return pp;
+    }).join(' ').match(/-?\d+(?:\.\d+)?/g)||[];
+    if(allU.length===allA.length){
+      for(let i=0;i<allA.length;i++){ if(Math.abs(parseFloat(allU[i])-parseFloat(allA[i]))>0.01) return false; }
+      return true;
+    }
+    return false;
+  }
+  // fill / app：多空答案用空格分隔逐项比较
+  const userNorm=normAnsStr(raw);
+  const ansNorm=normAnsStr(alignFillAnswer(q));
+  if(userNorm===ansNorm) return true;
+  const up=userNorm.split(' ').filter(x=>x);
+  const ap=ansNorm.split(' ').filter(x=>x);
+  if(up.length===ap.length && up.length>0){
+    for(let i=0;i<up.length;i++){
+      const u=parseFloat(up[i]), a=parseFloat(ap[i]);
+      if(!isNaN(u)&&!isNaN(a)){ if(Math.abs(u-a)>0.01) return false; }
+      else if(up[i]!==ap[i]) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
 function checkAnswer(userAns){
   const es=STATE.examState;
   const q=es.questions[es.current];
@@ -8561,45 +8789,8 @@ function checkAnswer(userAns){
   if(q.type==='choice'){
     isCorrect=userAns===q.ans;
   }else{
-    // 填空题/计算题/应用题：规范化答案后比较
-    const normalize = (s) => {
-      return String(s).trim()
-        .replace(/，/g, ',')  // 中文逗号转英文
-        .replace(/、/g, ' ')   // 中文顿号转空格
-        .replace(/\s+/g, ' ')  // 多个空格转一个
-        .replace(/,/g, ' ')    // 逗号转空格
-        .replace(/。/g, '')     // 去掉句号
-        .replace(/\.$/, '')     // 去掉结尾句号
-        .toLowerCase();
-    };
-    const userNorm = normalize(userAns);
-    const ansNorm = normalize(q.ans);
-    // 直接比较
-    if(userNorm === ansNorm){
-      isCorrect = true;
-    }else{
-      // 支持多个答案用空格分隔的情况，逐个比较
-      const userParts = userNorm.split(' ').filter(s=>s);
-      const ansParts = ansNorm.split(' ').filter(s=>s);
-      if(userParts.length === ansParts.length && userParts.length > 0){
-        let allMatch = true;
-        for(let i=0; i<userParts.length; i++){
-          // 数字比较：允许微小误差
-          const uNum = parseFloat(userParts[i]);
-          const aNum = parseFloat(ansParts[i]);
-          if(!isNaN(uNum) && !isNaN(aNum)){
-            if(Math.abs(uNum - aNum) > 0.01){
-              allMatch = false;
-              break;
-            }
-          }else if(userParts[i] !== ansParts[i]){
-            allMatch = false;
-            break;
-          }
-        }
-        isCorrect = allMatch;
-      }
-    }
+    // 填空题/计算题/应用题：统一判分（支持多空、多问）
+    isCorrect = judgeFillAnswer(q, Array.isArray(userAns)?userAns.join(' '):userAns);
   }
   es.correct[es.current]=isCorrect;
   if(!isCorrect){
@@ -8911,11 +9102,11 @@ function submitExam(){
   let correctCount = 0;
   state.questions.forEach((q,i)=>{
     const userAnswer = state.answers[i];
-    if(userAnswer !== null && userAnswer !== undefined && userAnswer !== ''){
+    if(isAnswerAnswered(userAnswer)){
       if(q.type==='choice'){
         state.correct[i] = parseInt(userAnswer) === q.ans;
       }else{
-        state.correct[i] = String(userAnswer).trim() === String(q.ans).trim();
+        state.correct[i] = judgeFillAnswer(q, Array.isArray(userAnswer)?userAnswer.join(' '):userAnswer);
       }
     }
     if(state.correct[i]){
@@ -8937,7 +9128,7 @@ function submitExam(){
   
   // 收集错题（添加到智能复习系统）
   state.questions.forEach((q, i) => {
-    if (!state.correct[i] && state.answers[i] !== null && state.answers[i] !== undefined && state.answers[i] !== '') {
+    if (!state.correct[i] && isAnswerAnswered(state.answers[i])) {
       addWrongQuestion(q, STATE.selectedGrade, STATE.selectedTerm, STATE.selectedSubject, STATE.selectedUnit);
     }
   });
@@ -8993,12 +9184,12 @@ function renderExamPage(){
     questionHtml = `<div class="question-type">填空题（${q.score}分）</div>
       <div class="question-text">${q.examIndex}. ${q.q}</div>
       ${q.image?`<div class="q-image">${q.image}</div>`:''}
-      <input type="text" class="answer-input" placeholder="请输入答案" value="${state.answers[state.current]||''}" oninput="state.examState.answers[state.current]=this.value" onchange="render()">`;
+      ${renderExamInputs(q, state.answers[state.current], 'fill')}`;
   }else if(q.type==='calc'){
     questionHtml = `<div class="question-type">计算题（${q.score}分）</div>
       <div class="question-text">${q.examIndex}. ${q.q}</div>
       ${q.image?`<div class="q-image">${q.image}</div>`:''}
-      <input type="text" class="answer-input" placeholder="请输入计算结果" value="${state.answers[state.current]||''}" oninput="state.examState.answers[state.current]=this.value" onchange="render()">`;
+      ${renderExamInputs(q, state.answers[state.current], 'calc')}`;
   }else{
     questionHtml = `<div class="question-type">应用题（${q.score}分）</div>
       <div class="question-text">${q.examIndex}. ${q.q}</div>
@@ -9017,7 +9208,7 @@ function renderExamPage(){
     <div class="exam-nav">
       <button class="btn btn-outline" onclick="prevExamQuestion()" ${state.current===0?'disabled':''}>← 上一题</button>
       <div class="question-nav">
-        ${state.questions.map((q,i)=>`<div class="q-dot ${state.answers[i]!==null&&state.answers[i]!==''?'answered':''} ${i===state.current?'current':''}" onclick="goExamQuestion(${i})">${i+1}</div>`).join('')}
+        ${state.questions.map((q,i)=>`<div class="q-dot ${isAnswerAnswered(state.answers[i])?'answered':''} ${i===state.current?'current':''}" onclick="goExamQuestion(${i})">${i+1}</div>`).join('')}
       </div>
       ${state.current<state.questions.length-1 ? 
         `<button class="btn btn-primary" onclick="nextExamQuestion()">下一题 →</button>` :
@@ -9071,7 +9262,7 @@ function renderExamResult(){
           </div>
           <div class="review-question">${q.q}</div>
           <div class="review-answer">
-            <div><strong>你的答案：</strong>${state.answers[i]||'未作答'}</div>
+            <div><strong>你的答案：</strong>${answerDisplay(state.answers[i])||'未作答'}</div>
             <div><strong>正确答案：</strong>${q.type==='choice'?String.fromCharCode(65+q.ans)+'. '+q.opts[q.ans]:q.ans}</div>
           </div>
           <div class="review-explain"><strong>解析：</strong>${q.explain||'暂无解析'}</div>
