@@ -13371,7 +13371,8 @@ function bindEvents(){
 function countAnswerInputs(q){
   if(q.type==='fill'){
     const blanks=(q.q.match(/_{2,8}/g)||[]).length;
-    return Math.max(blanks,1);
+    const parens=(q.q.match(/[（(]\s{0,3}[）)]/g)||[]).length;
+    return Math.max(blanks+parens,1);
   }
   if(q.type==='calc'){
     const parts=(q.q.match(/\(\d+\)/g)||[]).length;
@@ -13538,8 +13539,18 @@ function isAnswerAnswered(a){
 }
 // 把答案转成展示字符串（数组转空格分隔）
 function answerDisplay(a){
-  if(Array.isArray(a)) return a.map(v=>v||'').join(' ');
-  return a;
+  if(Array.isArray(a)) return a.map(v=>v==null?'':v).join(' ');
+  return a==null?'':String(a);
+}
+// 格式化用户答案：选择题显示选项文本，0 号答案不丢失，未作答显示"未作答"
+function formatUserAnswer(q, a){
+  if(a===null||a===undefined||a==='') return '未作答';
+  if(q && q.type==='choice'){
+    const idx=parseInt(a);
+    if(!isNaN(idx) && q.opts && q.opts[idx]!==undefined) return String.fromCharCode(65+idx)+'. '+q.opts[idx];
+  }
+  if(Array.isArray(a)) return a.map(v=>v===null||v===undefined?'':v).join(' ');
+  return String(a);
 }
 
 // 统一判分：fill（多空）/calc（多问）/app
@@ -13866,8 +13877,8 @@ function startExam(type){
     examTitle = '期末考试（全册综合）';
   }
   
-  // 从各单元随机抽取题目，共30题
-  let questions = [];
+  // 从各单元随机抽取题目，共30题（跨单元全局题干去重，2026-08-31 修复）
+  let allQuestions = [];
   const perUnit = Math.ceil(30 / units.length);
   units.forEach(uid=>{
     let unitQuestions = [];
@@ -13876,10 +13887,33 @@ function startExam(type){
     }else{
       unitQuestions = generateChineseQuestions(grade, term, uid, perUnit);
     }
-    questions = questions.concat(unitQuestions);
+    allQuestions = allQuestions.concat(unitQuestions);
   });
-  // 打乱顺序，取前30题
-  questions = questions.sort(()=>Math.random()-0.5).slice(0, 30);
+  // 全局题干去重（跨单元模板重叠时避免重复）
+  let questions = [];
+  const seenStems = new Set();
+  const pushUnique = (arr)=>{
+    for(const q of arr){
+      if(questions.length >= 30) return;
+      const k = stemKeyOf(q);
+      if(!seenStems.has(k)){ seenStems.add(k); questions.push(q); }
+    }
+  };
+  pushUnique(allQuestions);
+  // 若不足30题，从各单元补充更多
+  let guard = 0;
+  while(questions.length < 30 && guard < 8){
+    guard++;
+    units.forEach(uid=>{
+      if(questions.length >= 30) return;
+      let extra = [];
+      if(subject==='math'){ extra = generateMathQuestions(grade, term, uid, 8); }
+      else{ extra = generateChineseQuestions(grade, term, uid, 8); }
+      pushUnique(extra);
+    });
+  }
+  // 打乱顺序，保持30题不重复
+  questions.sort(()=>Math.random()-0.5);
   
   // 分配分数（30题总分正好100分）
   questions = questions.map((q,i)=>{
@@ -14098,7 +14132,7 @@ function renderExamResult(){
           </div>
           <div class="review-question">${q.q}</div>
           <div class="review-answer">
-            <div><strong>你的答案：</strong>${answerDisplay(state.answers[i])||'未作答'}</div>
+            <div><strong>你的答案：</strong>${formatUserAnswer(q, state.answers[i])}</div>
             <div><strong>正确答案：</strong>${q.type==='choice'?String.fromCharCode(65+q.ans)+'. '+q.opts[q.ans]:q.ans}</div>
           </div>
           <div class="review-explain"><strong>解析：</strong>${q.explain||'暂无解析'}</div>
@@ -14761,6 +14795,7 @@ function renderPaperGradePage(){
 }
 
 function renderPaperUpload(){
+  if(!STATE.paperGradeState) initPaperGrade();
   const pg = STATE.paperGradeState;
   let html = '';
 
@@ -14848,6 +14883,7 @@ function removePaperImage(idx){
 }
 
 function renderPaperOCR(){
+  if(!STATE.paperGradeState) initPaperGrade();
   const pg = STATE.paperGradeState;
   let html = '';
 
@@ -15035,6 +15071,7 @@ function updatePaperQuestion(idx, field, value){
 }
 
 function renderPaperReview(){
+  if(!STATE.paperGradeState) initPaperGrade();
   const pg = STATE.paperGradeState;
   let html = '<div class="knowledge-section"><h3><span class="icon">✏️</span>核对题目与答案（'+pg.questions.length+'题）</h3><div class="content">';
   html += '<p style="font-size:13px;color:#666;margin-bottom:12px">请核对每道题的内容、学生答案和参考答案，可直接编辑修改</p>';
@@ -15221,6 +15258,7 @@ function generateHandwrittenMarkup(){
 }
 
 function renderPaperGraded(){
+  if(!STATE.paperGradeState) initPaperGrade();
   const pg = STATE.paperGradeState;
   let html = '';
 
