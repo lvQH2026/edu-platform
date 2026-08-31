@@ -1702,14 +1702,431 @@ function geoPercent(part=60,total=100,label=''){
   const w=part/total*180;
   return `<svg width="220" height="60" viewBox="0 0 220 60" style="margin:8px 0"><rect x="10" y="15" width="180" height="25" fill="#f0f0f0" stroke="#ccc" stroke-width="1" rx="4"/><rect x="10" y="15" width="${w}" height="25" fill="#27AE60" rx="4"/><text x="${10+w/2}" y="32" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">${part}%</text><text x="100" y="55" text-anchor="middle" font-size="11" fill="#666">${label}</text></svg>`;
 }
-// 语文配图：古诗文意境卡
-function geoPoemScene(title,scene,dynasty=''){
-  return `<div style="margin:10px 0;padding:15px;background:linear-gradient(135deg,#fdfbfb 0%,#ebedee 100%);border-radius:12px;border-left:4px solid #764ba2"><div style="font-size:16px;font-weight:600;color:#764ba2;margin-bottom:6px">${title}${dynasty?` <span style="font-size:11px;color:#999;font-weight:normal">${dynasty}</span>`:''}</div><div style="font-size:28px;text-align:center;margin:8px 0">${scene}</div></div>`;
+// 语文配图：古诗文水墨意境卡（远山/明月/飞鸟/水波）
+function geoPoemScene(title,scene='',dynasty=''){
+  const hasMoon = /月|江|夜|望/.test(title+scene);
+  return `<div style="margin:10px 0;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#F7F2E7 0%,#EFE6D2 55%,#E4D9BF 100%);border:1px solid rgba(139,116,90,0.28);box-shadow:0 2px 10px rgba(120,100,70,0.08)">
+    <svg width="300" height="150" viewBox="0 0 300 150" style="display:block;width:100%;height:auto">
+      <circle cx="236" cy="40" r="19" fill="#F6ECCB" stroke="#D8C293" stroke-width="1"/>
+      <circle cx="236" cy="40" r="24" fill="none" stroke="rgba(184,158,110,0.45)" stroke-width="0.8"/>
+      <path d="M0,116 L48,76 L88,108 L148,62 L210,114 L258,84 L300,106 L300,150 L0,150 Z" fill="rgba(104,82,62,0.30)"/>
+      <path d="M0,130 L70,94 L138,128 L206,100 L300,132 L300,150 L0,150 Z" fill="rgba(94,74,55,0.42)"/>
+      <path d="M36,138 Q150,118 264,138" stroke="rgba(104,82,62,0.35)" stroke-width="1.3" fill="none"/>
+      <path d="M36,145 Q150,128 264,145" stroke="rgba(104,82,62,0.22)" stroke-width="1" fill="none"/>
+      <path d="M64,64 q9,-7 18,0 q9,-7 18,0" stroke="#8a7862" stroke-width="1.4" fill="none"/>
+      <path d="M212,58 q7,-6 14,0 q7,-6 14,0" stroke="#8a7862" stroke-width="1.4" fill="none"/>
+      ${hasMoon?'<path d="M222,34 q10,-12 20,-4 q-2,6 -8,8" fill="rgba(248,238,210,0.9)"/>':''}
+      <text x="150" y="44" text-anchor="middle" font-size="13" fill="rgba(104,82,62,0.55)" font-family="KaiTi,STKaiti,serif">${scene}</text>
+    </svg>
+    <div style="padding:10px 14px 12px;text-align:center;background:rgba(255,252,245,0.35)">
+      <div style="font-size:16px;font-weight:600;color:#6b4f2e;letter-spacing:2px">${title}</div>
+      <div style="font-size:11px;color:#9a835e;margin-top:3px">${dynasty}</div>
+    </div>
+  </div>`;
 }
-// 语文配图：阅读理解场景卡
+// 语文配图：阅读理解场景卡（书页+读书人）
 function geoReadingScene(emoji,title){
-  return `<div style="margin:10px 0;padding:12px;background:#f0f4ff;border-radius:10px;text-align:center"><div style="font-size:32px">${emoji}</div><div style="font-size:13px;color:#667eea;margin-top:4px;font-weight:500">${title}</div></div>`;
+  return `<div style="margin:10px 0;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#F3F6FC 0%,#E8EEF8 100%);border:1px solid rgba(102,126,234,0.25);box-shadow:0 2px 10px rgba(102,126,234,0.08)">
+    <svg width="300" height="120" viewBox="0 0 300 120" style="display:block;width:100%;height:auto">
+      <circle cx="228" cy="34" r="22" fill="rgba(255,200,87,0.35)"/>
+      <circle cx="228" cy="34" r="22" fill="none" stroke="rgba(255,200,87,0.7)" stroke-width="1"/>
+      <path d="M60,52 L118,42 L150,58 L118,80 L60,74 Z" fill="rgba(102,126,234,0.18)" stroke="#667eea" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M150,58 L184,42 L240,52 L240,74 L184,80 L150,58 Z" fill="rgba(102,126,234,0.12)" stroke="#667eea" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M60,52 L60,74 L118,80 L118,42 Z" fill="rgba(102,126,234,0.05)"/>
+      <path d="M70,60 L108,54 M70,68 L108,62" stroke="#667eea" stroke-width="1" opacity="0.5"/>
+      <path d="M162,62 L228,54 M162,70 L228,62" stroke="#667eea" stroke-width="1" opacity="0.5"/>
+      <text x="150" y="106" text-anchor="middle" font-size="13" fill="#5a6fc0" font-weight="500">${title}</text>
+    </svg>
+    <div style="padding:8px 12px 12px;text-align:center;font-size:12px;color:#6b7fae">${emoji}</div>
+  </div>`;
 }
+
+
+// ============================================
+// 配图函数库扩充（A级必须配：几何/面积模型/线段图/统计/数轴等）
+// ============================================
+
+// 网格面积模型：矩形分格涂色（分数/小数/百分数意义）
+// grid=10 -> 10x10 方格（100格），涂 num/den 比例
+function geoGridModel(num, den, label, grid){
+  grid = grid || 10;
+  const ratio = num / den;
+  const total = grid * grid;
+  const filled = Math.round(ratio * total);
+  const cw = 180 / grid, ch = 150 / grid;
+  let cells = '', k = 0;
+  for(let r=0;r<grid;r++){
+    for(let c=0;c<grid;c++){
+      const f = k < filled;
+      cells += `<rect x="${14+c*cw}" y="${16+r*ch}" width="${cw-0.8}" height="${ch-0.8}" fill="${f?'#F4A261':'#FFF9F0'}" stroke="#C8A27C" stroke-width="0.6"/>`;
+      k++;
+    }
+  }
+  return `<svg width="230" height="212" viewBox="0 0 210 212" style="max-width:100%;margin:8px 0"><rect x="14" y="16" width="${grid*cw}" height="${grid*ch}" fill="none" stroke="#8D6E63" stroke-width="1.4"/>${cells}<text x="109" y="${26+grid*ch+6}" text-anchor="middle" font-size="12" fill="#555">${label||('涂色部分表示 ' + num + '/' + den)}</text></svg>`;
+}
+
+// 分数条模型：水平分段涂色
+function geoFractionBar(num, den, label){
+  const seg = 200 / den;
+  let s = '';
+  for(let i=0;i<den;i++){
+    const f = i < num;
+    s += `<rect x="${10+i*seg}" y="22" width="${Math.max(seg-1.5,1)}" height="36" fill="${f?'#F4A261':'#FFF9F0'}" stroke="#8D6E63" stroke-width="1"/>`;
+  }
+  return `<svg width="230" height="74" viewBox="0 0 220 74" style="max-width:100%;margin:8px 0"><text x="10" y="15" font-size="12" fill="#8D6E63">单位"1"</text><rect x="10" y="22" width="${seg*den}" height="36" fill="none" stroke="#8D6E63" stroke-width="1.2"/>${s}<text x="110" y="68" text-anchor="middle" font-size="12" fill="#555">${label||(num + '/' + den + ' 涂色')}</text></svg>`;
+}
+
+// 圆面积模型：圆等分涂色（分数意义）
+function geoCircleModel(num, den, label){
+  const n = 8;
+  const filled = Math.round(num/den*n);
+  const cx=80, cy=62, r=46;
+  let p = '';
+  for(let i=0;i<n;i++){
+    const a0=(i/n)*2*Math.PI-Math.PI/2, a1=((i+1)/n)*2*Math.PI-Math.PI/2;
+    const x0=(cx+r*Math.cos(a0)).toFixed(1), y0=(cy+r*Math.sin(a0)).toFixed(1);
+    const x1=(cx+r*Math.cos(a1)).toFixed(1), y1=(cy+r*Math.sin(a1)).toFixed(1);
+    p += `<path d="M${cx},${cy} L${x0},${y0} A${r},${r} 0 0 1 ${x1},${y1} Z" fill="${i<filled?'#F4A261':'#FFF9F0'}" stroke="#8D6E63" stroke-width="1"/>`;
+  }
+  return `<svg width="200" height="132" viewBox="0 0 165 132" style="max-width:100%;margin:8px 0">${p}<text x="80" y="126" text-anchor="middle" font-size="12" fill="#555">${label||(num + '/' + den + ' 涂色')}</text></svg>`;
+}
+
+// 三角形面积示意图（底×高÷2）
+function geoTriangle(b, h, label){
+  const bx=150, by=120;
+  const px=150-40, py=120-h*2.4;
+  return `<svg width="230" height="150" viewBox="0 0 230 150" style="max-width:100%;margin:8px 0">
+    <path d="M${px},${by} L${bx},${by} L${px},${py} Z" fill="rgba(74,144,217,0.18)" stroke="#4A90D9" stroke-width="2"/>
+    <line x1="${px}" y1="${by}" x2="${px}" y2="${py}" stroke="#E74C3C" stroke-width="1.6" stroke-dasharray="4,3"/>
+    <text x="${px-12}" y="${(by+py)/2}" text-anchor="middle" font-size="11" fill="#E74C3C">高${h}</text>
+    <text x="${(px+bx)/2}" y="${by+16}" text-anchor="middle" font-size="11" fill="#4A90D9">底 ${b}</text>
+    <text x="160" y="30" font-size="12" fill="#555">面积=底×高÷2</text>
+  </svg>`;
+}
+
+// 平行四边形面积示意图（底×高，高为虚线）
+function geoParallelogram(b, h, label){
+  const skew=30;
+  return `<svg width="230" height="140" viewBox="0 0 230 140" style="max-width:100%;margin:8px 0">
+    <path d="M30,100 L${30+skew},${100-h*2.2} L${30+b*1.6+skew},${100-h*2.2} L${30+b*1.6},100 Z" fill="rgba(39,174,96,0.18)" stroke="#27AE60" stroke-width="2"/>
+    <line x1="${30+skew}" y1="${100-h*2.2}" x2="${30+skew}" y2="100" stroke="#E74C3C" stroke-width="1.6" stroke-dasharray="4,3"/>
+    <text x="${30+skew-12}" y="98" text-anchor="end" font-size="11" fill="#E74C3C">高${h}</text>
+    <text x="${30+b*1.6/2}" y="${100+16}" text-anchor="middle" font-size="11" fill="#27AE60">底 ${b}</text>
+    <text x="160" y="26" font-size="12" fill="#555">面积=底×高</text>
+  </svg>`;
+}
+
+// 梯形面积示意图（(上底+下底)×高÷2）
+function geoTrapezoid(a, b, h, label){
+  const off=18;
+  const topW=a*2.4, botW=b*2.4;
+  return `<svg width="230" height="150" viewBox="0 0 230 150" style="max-width:100%;margin:8px 0">
+    <path d="M${20+off},${120-h*2.4} L${20+off+topW},${120-h*2.4} L${20+botW},120 L20,120 Z" fill="rgba(118,75,162,0.18)" stroke="#764BA2" stroke-width="2"/>
+    <line x1="${20+off}" y1="${120-h*2.4}" x2="${20+off}" y2="120" stroke="#E74C3C" stroke-width="1.6" stroke-dasharray="4,3"/>
+    <text x="${20+off-12}" y="118" text-anchor="end" font-size="11" fill="#E74C3C">高${h}</text>
+    <text x="${20+off+topW/2}" y="${120-h*2.4-6}" text-anchor="middle" font-size="11" fill="#764BA2">上底${a}</text>
+    <text x="${20+botW/2}" y="138" text-anchor="middle" font-size="11" fill="#764BA2">下底 ${b}</text>
+    <text x="168" y="26" font-size="12" fill="#555">面积=(上底+下底)×高÷2</text>
+  </svg>`;
+}
+
+// 长方体立体示意图（等轴测，标注长宽高）
+function geoCuboid(l, w, h, unit){
+  unit = unit || '';
+  return `<svg width="230" height="160" viewBox="0 0 230 160" style="max-width:100%;margin:8px 0">
+    <g fill="rgba(74,144,217,0.15)" stroke="#4A90D9" stroke-width="1.6">
+      <rect x="60" y="40" width="${l*1.8}" height="${h*1.8}" />
+      <rect x="${60+l*1.8}" y="${40-h*1.2}" width="${w*1.6}" height="${h*1.8}" transform="skewY(-34)" />
+      <rect x="${60+l*1.8}" y="${40+h*1.8}" width="${w*1.6}" height="${h*1.8}" transform="skewY(34)" />
+    </g>
+    <text x="${60+l*1.8/2}" y="${40+h*1.8/2}" text-anchor="middle" font-size="11" fill="#4A90D9">高${h}${unit}</text>
+    <text x="${60+l*1.8+8}" y="150" font-size="11" fill="#4A90D9">长${l}${unit}</text>
+    <text x="${60+l*1.8+40}" y="${40-h*1.2+10}" font-size="11" fill="#E74C3C">宽${w}${unit}</text>
+  </svg>`;
+}
+
+// 正方体立体示意图
+function geoCube(s, unit){
+  unit = unit || '';
+  return `<svg width="180" height="150" viewBox="0 0 180 150" style="max-width:100%;margin:8px 0">
+    <g fill="rgba(74,144,217,0.15)" stroke="#4A90D9" stroke-width="1.6">
+      <rect x="50" y="35" width="${s*1.5}" height="${s*1.5}" />
+      <rect x="${50+s*1.5}" y="${35-s*1.0}" width="${s*1.2}" height="${s*1.5}" transform="skewY(-34)" />
+      <rect x="${50+s*1.5}" y="${35+s*1.5}" width="${s*1.2}" height="${s*1.5}" transform="skewY(34)" />
+    </g>
+    <text x="${50+s*1.5/2}" y="${35+s*1.5/2}" text-anchor="middle" font-size="11" fill="#4A90D9">棱长${s}${unit}</text>
+  </svg>`;
+}
+
+// 正方体展开图（十字形）
+function geoNetCube(label){
+  const u=26;
+  const faces=[[1,0],[1,1],[1,2],[0,1],[2,1],[3,1]];
+  const cx=52, cy=34;
+  let cells='';
+  faces.forEach(f=>{
+    cells+=`<rect x="${cx+f[0]*u}" y="${cy+f[1]*u}" width="${u-1}" height="${u-1}" fill="rgba(74,144,217,0.16)" stroke="#4A90D9" stroke-width="1.4"/>`;
+  });
+  return `<svg width="190" height="150" viewBox="0 0 190 150" style="max-width:100%;margin:8px 0">${cells}<text x="95" y="148" text-anchor="middle" font-size="12" fill="#555">${label||'正方体展开图（6个面）'}</text></svg>`;
+}
+
+// 圆柱立体示意图（标注底面半径r、高h）
+function geoCylinder(r, h, unit){
+  unit = unit || '';
+  return `<svg width="210" height="180" viewBox="0 0 210 180" style="max-width:100%;margin:8px 0">
+    <ellipse cx="105" cy="38" rx="64" ry="20" fill="rgba(74,144,217,0.15)" stroke="#4A90D9" stroke-width="1.8"/>
+    <path d="M41,38 L41,${150} A64,20 0 0 0 169,${150} L169,38" fill="rgba(74,144,217,0.08)" stroke="#4A90D9" stroke-width="1.8"/>
+    <ellipse cx="105" cy="${150}" rx="64" ry="20" fill="rgba(74,144,217,0.25)" stroke="#4A90D9" stroke-width="1.8"/>
+    <line x1="105" y1="38" x2="169" y2="38" stroke="#E74C3C" stroke-width="1.6"/>
+    <text x="138" y="33" font-size="11" fill="#E74C3C">r=${r}${unit}</text>
+    <text x="173" y="${94}" font-size="11" fill="#4A90D9">高${h}${unit}</text>
+  </svg>`;
+}
+
+// 圆锥示意图
+function geoCone(r, h, unit){
+  unit = unit || '';
+  return `<svg width="190" height="170" viewBox="0 0 190 170" style="max-width:100%;margin:8px 0">
+    <ellipse cx="95" cy="${150}" rx="62" ry="20" fill="rgba(118,75,162,0.25)" stroke="#764BA2" stroke-width="1.8"/>
+    <path d="M95,30 L33,${150} A62,20 0 0 0 157,${150} Z" fill="rgba(118,75,162,0.10)" stroke="#764BA2" stroke-width="1.8"/>
+    <line x1="95" y1="${150}" x2="95" y2="30" stroke="#E74C3C" stroke-width="1.6" stroke-dasharray="4,3"/>
+    <text x="100" y="95" font-size="11" fill="#E74C3C">高${h}${unit}</text>
+    <text x="40" y="${150+6}" font-size="11" fill="#764BA2">底面半径r=${r}${unit}</text>
+  </svg>`;
+}
+
+// 条形统计图
+function geoBarChart(labels, data, unit){
+  unit = unit || '';
+  const max = Math.max.apply(null, data);
+  const bh = 120, bw = 24, gap = 30, left = 46;
+  let bars='', maxV=0;
+  for(let i=0;i<data.length;i++){
+    const h = data[i]/max*bh;
+    if(data[i]>maxV)maxV=data[i];
+    const x = left + i*(bw+gap);
+    bars += `<rect x="${x}" y="${130-h}" width="${bw}" height="${h}" fill="#4A90D9" rx="3"/>
+      <text x="${x+bw/2}" y="${130-h-5}" text-anchor="middle" font-size="10" fill="#333">${data[i]}</text>
+      <text x="${x+bw/2}" y="148" text-anchor="middle" font-size="11" fill="#666">${labels[i]}</text>`;
+  }
+  return `<svg width="230" height="165" viewBox="0 0 230 165" style="max-width:100%;margin:8px 0">
+    <line x1="${left}" y1="130" x2="212" y2="130" stroke="#999" stroke-width="1"/>
+    ${bars}
+  </svg>`;
+}
+
+// 折线统计图
+function geoLineChart(labels, data, unit){
+  unit = unit || '';
+  const max = Math.max.apply(null, data), min = Math.min.apply(null, data);
+  const range = (max-min) || 1;
+  const bh = 110, left = 40, step = 42;
+  let pts = '', dots = '', labelsHtml = '';
+  for(let i=0;i<data.length;i++){
+    const x = left + i*step;
+    const y = 132 - (data[i]-min)/range*bh;
+    pts += (i===0?'':' L') + x + ',' + y;
+    dots += `<circle cx="${x}" cy="${y}" r="3.5" fill="#E74C3C"/>`;
+    labelsHtml += `<text x="${x}" y="${132+16}" text-anchor="middle" font-size="11" fill="#666">${labels[i]}</text>`;
+  }
+  return `<svg width="230" height="165" viewBox="0 0 230 165" style="max-width:100%;margin:8px 0">
+    <polyline points="${pts}" fill="none" stroke="#4A90D9" stroke-width="2.2" stroke-linejoin="round"/>
+    ${dots}${labelsHtml}
+  </svg>`;
+}
+
+// 扇形统计图 parts=[{label,value,color}]
+function geoPieChart(parts, total){
+  total = total || parts.reduce(function(a,b){return a+b.value;},0);
+  const cx=70, cy=70, r=55;
+  let a0=-Math.PI/2, p='', labels='', sum=0;
+  for(let i=0;i<parts.length;i++){
+    const a1 = a0 + parts[i].value/total*2*Math.PI;
+    const x0=(cx+r*Math.cos(a0)).toFixed(1), y0=(cy+r*Math.sin(a0)).toFixed(1);
+    const x1=(cx+r*Math.cos(a1)).toFixed(1), y1=(cy+r*Math.sin(a1)).toFixed(1);
+    const large = (parts[i].value/total)>0.5?1:0;
+    p += `<path d="M${cx},${cy} L${x0},${y0} A${r},${r} 0 ${large} 1 ${x1},${y1} Z" fill="${parts[i].color||'#4A90D9'}" stroke="#fff" stroke-width="1.5"/>`;
+    const mid=(a0+a1)/2;
+    const lx=(cx+(r+14)*Math.cos(mid)).toFixed(0), ly=(cy+(r+14)*Math.sin(mid)).toFixed(0);
+    labels += `<text x="${lx}" y="${ly}" text-anchor="middle" font-size="11" fill="#333">${parts[i].label}</text>`;
+    a0 = a1;
+  }
+  return `<svg width="220" height="150" viewBox="0 0 220 150" style="max-width:100%;margin:8px 0">${p}${labels}</svg>`;
+}
+
+// 数轴（可含负数）
+function geoNumberLine(min, max, marks, unit){
+  unit = unit || '';
+  const left = 20, right = 210, range = max-min;
+  let m='';
+  for(let v=min;v<=max;v++){
+    const x = left + (v-min)/range*(right-left);
+    m += `<line x1="${x}" y1="32" x2="${x}" y2="38" stroke="#666" stroke-width="1.2"/>
+      <text x="${x}" y="50" text-anchor="middle" font-size="11" fill="#333">${v}</text>`;
+    if(v===0) m += `<circle cx="${x}" cy="35" r="4" fill="#E74C3C"/>`;
+  }
+  return `<svg width="230" height="62" viewBox="0 0 230 62" style="max-width:100%;margin:8px 0">
+    <line x1="${left}" y1="35" x2="${right}" y2="35" stroke="#666" stroke-width="2"/>
+    <polygon points="${right},30 ${right+6},35 ${right},40" fill="#666"/>
+    ${m}
+  </svg>`;
+}
+
+// 植树问题示意图 mode: both/end/ring
+function geoTreePlanting(n, gap, mode){
+  const start=16, end=214, totalLen=end-start;
+  const segs = n-1;
+  let g='';
+  for(let i=0;i<n;i++){
+    const x = start + i*totalLen/segs;
+    const trunkY = 62;
+    g += `<circle cx="${x}" cy="${trunkY-12}" r="9" fill="#27AE60"/>
+      <line x1="${x}" y1="${trunkY-4}" x2="${x}" y2="${trunkY+12}" stroke="#8D6E63" stroke-width="3"/>`;
+    if(i>0){
+      const px = start + (i-0.5)*totalLen/segs;
+      g += `<text x="${px}" y="${trunkY+24}" text-anchor="middle" font-size="10" fill="#666">${gap}</text>`;
+    }
+  }
+  if(mode==='end'||mode==='ring'){}
+  const cap = mode==='both'?'两端都栽':'一端栽一端不栽';
+  return `<svg width="230" height="110" viewBox="0 0 230 110" style="max-width:100%;margin:8px 0">
+    <line x1="${start}" y1="50" x2="${end}" y2="50" stroke="#C8A27C" stroke-width="2"/>
+    ${g}<text x="115" y="100" text-anchor="middle" font-size="12" fill="#555">${cap}（共${n}棵，间距${gap}）</text>
+  </svg>`;
+}
+
+// 相遇问题示意图
+function geoMeet(va, vb, total){
+  return `<svg width="230" height="78" viewBox="0 0 230 78" style="max-width:100%;margin:8px 0">
+    <line x1="18" y1="40" x2="212" y2="40" stroke="#999" stroke-width="1.6"/>
+    <text x="18" y="26" font-size="11" fill="#4A90D9">A地</text>
+    <text x="212" y="26" text-anchor="end" font-size="11" fill="#E74C3C">B地</text>
+    <rect x="34" y="30" width="26" height="20" rx="4" fill="#4A90D9"/>
+    <polygon points="66,40 74,35 74,45" fill="#4A90D9"/>
+    <rect x="166" y="30" width="26" height="20" rx="4" fill="#E74C3C"/>
+    <polygon points="158,40 150,35 150,45" fill="#E74C3C"/>
+    <text x="115" y="66" text-anchor="middle" font-size="12" fill="#555">相向而行，相遇于中点附近</text>
+  </svg>`;
+}
+
+// 坐标位置图（方格+点）
+function geoCoordinate(x, y, label, size){
+  size = size || 5;
+  const u=32, left=30, top=20;
+  let grid='', nums='';
+  for(let i=0;i<=size;i++){
+    grid += `<line x1="${left}" y1="${top+i*u}" x2="${left+size*u}" y2="${top+i*u}" stroke="#E0D9CF" stroke-width="1"/>
+      <line x1="${left+i*u}" y1="${top}" x2="${left+i*u}" y2="${top+size*u}" stroke="#E0D9CF" stroke-width="1"/>`;
+    nums += `<text x="${left+i*u}" y="${top+size*u+14}" text-anchor="middle" font-size="10" fill="#999">${i}</text>
+      <text x="${left-8}" y="${top+i*u+4}" text-anchor="middle" font-size="10" fill="#999">${size-i}</text>`;
+  }
+  const px = left+x*u, py = top+(size-y)*u;
+  return `<svg width="220" height="${top+size*u+24}" viewBox="0 0 220 ${top+size*u+24}" style="max-width:100%;margin:8px 0">
+    ${grid}${nums}<circle cx="${px}" cy="${py}" r="7" fill="#E74C3C"/>
+    <text x="${px+10}" y="${py-8}" font-size="11" fill="#E74C3C">${label||('('+x+','+y+')')}</text>
+  </svg>`;
+}
+
+// 比的关系条（按比例分段）
+function geoRatioBar(a, b, la, lb){
+  const w1 = a/(a+b)*180, w2 = b/(a+b)*180;
+  return `<svg width="230" height="64" viewBox="0 0 230 64" style="max-width:100%;margin:8px 0">
+    <rect x="15" y="16" width="${w1}" height="30" fill="rgba(74,144,217,0.35)" stroke="#4A90D9" stroke-width="1.6"/>
+    <rect x="${15+w1}" y="16" width="${w2}" height="30" fill="rgba(231,76,60,0.3)" stroke="#E74C3C" stroke-width="1.6"/>
+    <text x="${15+w1/2}" y="36" text-anchor="middle" font-size="12" fill="#1A1B1C" font-weight="600">${la} ${a}份</text>
+    <text x="${15+w1+w2/2}" y="36" text-anchor="middle" font-size="12" fill="#1A1B1C" font-weight="600">${lb} ${b}份</text>
+  </svg>`;
+}
+
+// 鸽巢问题示意图（n个球放m个抽屉）
+function geoPigeonhole(n, holes){
+  const cw=48, gap=18, left=20;
+  let b='';
+  for(let i=0;i<holes;i++){
+    const x=left+i*(cw+gap);
+    b += `<rect x="${x}" y="58" width="${cw}" height="34" fill="rgba(74,144,217,0.12)" stroke="#4A90D9" stroke-width="1.6"/>`;
+    const balls = Math.floor(n/holes) + (i < n%holes ? 1 : 0);
+    for(let k=0;k<balls;k++){
+      b += `<circle cx="${x+cw/2}" cy="${48-k*14}" r="6.5" fill="#F4A261" stroke="#D98A3D" stroke-width="1"/>`;
+    }
+  }
+  return `<svg width="230" height="110" viewBox="0 0 230 110" style="max-width:100%;margin:8px 0">${b}<text x="115" y="105" text-anchor="middle" font-size="12" fill="#555">${n}个球放入${holes}个抽屉</text></svg>`;
+}
+
+// 比例尺示意图
+function geoScaleMap(scaleText, mapW, realText){
+  mapW = mapW || 60;
+  return `<svg width="230" height="80" viewBox="0 0 230 80" style="max-width:100%;margin:8px 0">
+    <rect x="16" y="18" width="${mapW}" height="34" fill="rgba(74,144,217,0.12)" stroke="#4A90D9" stroke-width="1.6"/>
+    <text x="${16+mapW/2}" y="40" text-anchor="middle" font-size="11" fill="#4A90D9">图上</text>
+    <text x="${16+mapW/2}" y="64" text-anchor="middle" font-size="11" fill="#666">${mapW}厘米</text>
+    <polygon points="${16+mapW+4},35 ${16+mapW+12},30 ${16+mapW+12},40" fill="#666"/>
+    <rect x="${16+mapW+18}" y="18" width="96" height="34" fill="rgba(231,76,60,0.12)" stroke="#E74C3C" stroke-width="1.6"/>
+    <text x="${16+mapW+66}" y="40" text-anchor="middle" font-size="11" fill="#E74C3C">实际</text>
+    <text x="${16+mapW+66}" y="64" text-anchor="middle" font-size="11" fill="#666">${realText}</text>
+    <text x="115" y="78" text-anchor="middle" font-size="11" fill="#555">比例尺 ${scaleText}</text>
+  </svg>`;
+}
+
+// 温度计（负数/温度）
+function geoThermometer(deg){
+  const bulbY=128, minY=30, maxY=120, tubeY=Math.max(minY, Math.min(maxY, maxY-(deg-(-10))/50*(maxY-minY)));
+  const fillH = bulbY-tubeY;
+  return `<svg width="120" height="160" viewBox="0 0 120 160" style="max-width:100%;margin:8px 0">
+    <line x1="60" y1="16" x2="60" y2="112" stroke="#666" stroke-width="6" stroke-linecap="round"/>
+    <rect x="46" y="${tubeY}" width="28" height="${fillH}" fill="#E74C3C"/>
+    <circle cx="60" cy="${bulbY}" r="22" fill="#E74C3C"/>
+    <text x="60" y="${bulbY+40}" text-anchor="middle" font-size="12" fill="#333">${deg}°C</text>
+  </svg>`;
+}
+
+// 数与形规律示意（棋子/图案递增）
+function geoPattern(n){
+  return `<svg width="220" height="120" viewBox="0 0 220 120" style="max-width:100%;margin:8px 0">
+    <rect x="30" y="70" width="36" height="30" fill="#4A90D9" rx="3"/>
+    <text x="48" y="64" text-anchor="middle" font-size="12" fill="#333" font-weight="600">5</text>
+    <rect x="90" y="50" width="36" height="50" fill="#4A90D9" rx="3"/>
+    <text x="108" y="44" text-anchor="middle" font-size="12" fill="#333" font-weight="600">8</text>
+    <rect x="150" y="30" width="36" height="70" fill="#4A90D9" rx="3"/>
+    <text x="168" y="24" text-anchor="middle" font-size="12" fill="#333" font-weight="600">11</text>
+    <text x="48" y="112" text-anchor="middle" font-size="11" fill="#666">第1个</text>
+    <text x="108" y="112" text-anchor="middle" font-size="11" fill="#666">第2个</text>
+    <text x="168" y="112" text-anchor="middle" font-size="11" fill="#666">第3个</text>
+    <text x="105" y="14" text-anchor="middle" font-size="11" fill="#E74C3C">每增加一个图案，棋子数 +3</text>
+  </svg>`;
+}
+
+// 数与形规律示意（小棒摆正方形）
+function geoSticks(n){
+  let s='';
+  const rows=[{x:12,y:64},{x:90,y:64},{x:168,y:64}];
+  for(let i=0;i<3;i++){
+    const cx=rows[i].x, cy=rows[i].y;
+    const k=i+1;
+    let g='';
+    for(let sq=0;sq<k;sq++){
+      g+=`<rect x="${cx+sq*22}" y="${cy}" width="18" height="18" fill="rgba(74,144,217,0.12)" stroke="#4A90D9" stroke-width="1.6"/>`;
+    }
+    s+=`<g>${g}<text x="${cx+18}" y="${cy+46}" text-anchor="middle" font-size="11" fill="#555">${i+1}个 ${4+3*i}根</text></g>`;
+  }
+  return `<svg width="230" height="120" viewBox="0 0 230 120" style="max-width:100%;margin:8px 0">${s}</svg>`;
+}
+
+// 图形旋转示意（绕点O顺时针旋转90°）
+function geoRotate(){
+  return `<svg width="210" height="150" viewBox="0 0 210 150" style="max-width:100%;margin:8px 0">
+    <text x="105" y="16" text-anchor="middle" font-size="12" fill="#E74C3C" font-weight="600">图形绕点O顺时针旋转90°</text>
+    <rect x="42" y="80" width="46" height="46" fill="rgba(74,144,217,0.15)" stroke="#4A90D9" stroke-width="1.6" stroke-dasharray="5 3"/>
+    <text x="65" y="142" text-anchor="middle" font-size="11" fill="#666">旋转前</text>
+    <rect x="120" y="22" width="46" height="46" fill="rgba(39,174,96,0.18)" stroke="#27AE60" stroke-width="1.6"/>
+    <text x="143" y="86" text-anchor="middle" font-size="11" fill="#666">旋转后</text>
+    <circle cx="65" cy="103" r="3.5" fill="#E74C3C"/>
+    <text x="75" y="107" font-size="12" fill="#E74C3C" font-weight="600">O</text>
+    <path d="M 95 97 A 30 30 0 0 1 118 74" fill="none" stroke="#E74C3C" stroke-width="1.8"/>
+    <path d="M 115 68 L 123 72 L 117 79 Z" fill="#E74C3C"/>
+  </svg>`;
+}
+
 
 // ============================================
 // 交互动画演示组件
@@ -5647,9 +6064,80 @@ function generateMathQuestions(grade,term,unitId,count=100){
     const q=t();
     q.id=`${unitId}_${String(i+1).padStart(2,'0')}`;
     q.diff=diffs[i%diffs.length];
+    autoIllustrate(q, unitId);
     questions.push(q);
   }
   return questions;
+}
+
+
+// 智能补图：根据题干关键词自动附加A级配图（无图才补，已有图不覆盖）
+function extractFraction(t){
+  const m = t.match(/(\d+)\/(\d+)/);
+  if(m && parseInt(m[2])<=12 && parseInt(m[2])>1 && parseInt(m[1])<=parseInt(m[2])) return {num:parseInt(m[1]),den:parseInt(m[2])};
+  return null;
+}
+function autoIllustrate(q, unitKey){
+  if(q.image) return q;
+  const t = q.q;
+  let img = '';
+  // ---- A级：几何图形 ----
+  if(/圆环/.test(t)) img = geoRing(50,28);
+  else if(/圆锥/.test(t)) img = geoCone(4,9);
+  else if(/圆柱/.test(t) && /高/.test(t)) img = geoCylinder(4,10);
+  else if(/长方体/.test(t)) img = geoCuboid(6,4,5);
+  else if(/正方体/.test(t)) img = geoCube(4);
+  else if(/梯形/.test(t) && /面积/.test(t)) img = geoTrapezoid(4,8,5);
+  else if(/平行四边形/.test(t) && /面积/.test(t)) img = geoParallelogram(8,5);
+  else if(/三角形/.test(t) && (/面积/.test(t)||/高/.test(t)||/底/.test(t))) img = geoTriangle(6,4);
+  else if(/正方形/.test(t) && (/面积/.test(t)||/周长/.test(t))) img = geoRect(80,80);
+  else if(/长方形/.test(t) && (/面积/.test(t)||/周长/.test(t))) img = geoRect(92,52);
+  else if(/圆/.test(t) && (/面积/.test(t)||/周长/.test(t)||/半径/.test(t)||/直径/.test(t))) img = geoCircle(38);
+  // ---- A级：方向位置 ----
+  else if(/北偏|东偏|南偏|西偏/.test(t)) img = geoDirection(30);
+  else if(/比例尺/.test(t)) img = geoScaleMap('1:10000','5','500米');
+  // ---- A级：负数和温度 ----
+  else if(/℃|°C|温差|零下|记作|数轴/.test(t)) img = geoNumberLine(-4,5);
+  else if(/摄氏度/.test(t)) img = geoThermometer(-5);
+  // ---- A级：比与百分率 ----
+  else if(/含盐率|出勤率|合格率|发芽率|成活率|命中率/.test(t)) img = geoPercent(85,100,'比率（部分/总量）');
+  else if(/按.{0,10}(分配|配制)|长与宽的比|甲乙两数的比|围成.{0,8}比|药粉.{0,4}比/.test(t)){ const rm=t.match(/(\d+)\s*:\s*(\d+)/); img = rm ? geoRatioBar(parseInt(rm[1]),parseInt(rm[2])) : geoRatioBar(3,2); }
+  else if(/打.{0,3}折|七五折|八五折|几折|利率|年利率|成数|几成/.test(t)) img = geoPercent(80,100,'折扣/成数');
+  // ---- A级：鸽巢/抽屉原理 ----
+  else if(/抽屉|鸽巢|至少取出.{0,6}球|同一天过生日|同一个月过生日|至少取出.*保证/.test(t)) img = geoPigeonhole(7,3);
+  // ---- A级：数学广角-搭配/找次品 ----
+  else if(/搭配|有.{1,4}种选|每两人.{0,4}赛|不同的.*选法/.test(t)) img = geoRatio(3,2,'选项一','选项二');
+  // ---- A级：数对/坐标位置 ----
+  else if(/数对|第.{1,3}列第.{1,3}行|方格纸/.test(t)) img = geoCoordinate(5,3,'(5,3)');
+  // ---- A级：植树问题 ----
+  else if(/植树|栽.{0,4}棵|每隔.{1,6}米(栽|种|摆|插|装)|路灯|彩旗|锯成|挂钟|走廊一边/.test(t)) img = geoTreePlanting(6,5,'both');
+  // ---- A级：图形旋转 ----
+  else if(/旋转|顺时针|逆时针|绕.{1,6}(旋转|转动)/.test(t)) img = geoRotate();
+  // ---- A级：折线统计图 ----
+  else if(/折线统计图|气温变化|体温变化/.test(t)) img = geoLineChart(['周一','周二','周三','周四','周五'],[12,18,15,22,20],'');
+  // ---- A级：分数意义（平均分/每段占全长） ----
+  if(!img && /平均分成.{1,8}份|每段占全长|占全长|占全班|占全级|每.{1,2}占|平均分成/.test(t)){
+    const fr2 = extractFraction(t);
+    img = fr2 ? geoFractionBar(fr2.num, fr2.den) : geoFractionBar(1,4);
+  }
+  // ---- A级：列方程解决问题（线段图） ----
+  if(!img && /列方程/.test(t) && /app/.test(q.type)) img = geoLineDiagram([{label:'所求部分',percent:65,color:'#4A90D9'},{label:'其余部分',percent:35,color:'#E74C3C'}],'总量关系示意');
+  // ---- B级：语文古诗意境卡 ----
+  else if(/默写《|《[^》]{2,10}》/.test(t)){
+    const mt = t.match(/《([^》]{2,10})》/);
+    img = geoPoemScene(mt?mt[1]:'古诗','','');
+  }
+  // ---- B级：语文阅读理解场景卡 ----
+  else if(/阅读短文|阅读理解|短文|课文《|课文中/.test(t)) img = geoReadingScene('📖','阅读理解');
+  // ---- A级：分数意义（应用题/填空题 含"几分之几"） ----
+  if(!img){
+    const fr = extractFraction(t);
+    if(fr && /几分之几|占|用去|还剩|剩下的|人数|棵树|千克|米|页|元/.test(t) && /app|fill/.test(q.type)){
+      img = geoFractionBar(fr.num, fr.den);
+    }
+  }
+  if(img) q.image = img;
+  return q;
 }
 
 // 数学题目模板
@@ -5818,31 +6306,31 @@ function getMathTemplates(grade,term,unitId){
   
   // ========== 六年级上册 第七单元：扇形统计图 ==========
   if(key==='6-up-math-m7'){
-    templates.push(()=>({type:'choice',q:'扇形统计图用什么表示各部分占总体的百分比？',opts:['扇形的面积大小','扇形圆心角的大小','扇形的弧长','扇形的周长'],ans:1,explain:'扇形统计图用整个圆表示总数，用圆内各个扇形的大小表示各部分数量占总数的百分数。扇形的大小由圆心角决定。'}));
-    templates.push(()=>({type:'choice',q:'在扇形统计图中，表示总数的是？',opts:['整个圆','扇形','圆心角','圆弧'],ans:0,explain:'扇形统计图中，整个圆表示总数（单位1），各个扇形表示各部分占总数的百分比。所有扇形的百分比加起来等于100%。'}));
-    templates.push(()=>{const p=randInt(20,50);return{type:'choice',q:`一个扇形统计图中，某部分占总体的${p}%，该部分对应的扇形圆心角是多少度？`,opts:[`${360*p/100}°`,`${p}°`,`${180*p/100}°`,`${90*p/100}°`],ans:0,explain:`圆心角 = 360° × 百分比 = 360° × ${p}% = ${360*p/100}°。整个圆是360°。`+geoSector(Math.round(360*p/100),40)};});
+    templates.push(()=>({type:'choice',q:'扇形统计图用什么表示各部分占总体的百分比？',opts:['扇形的面积大小','扇形圆心角的大小','扇形的弧长','扇形的周长'],ans:1,explain:'扇形统计图用整个圆表示总数，用圆内各个扇形的大小表示各部分数量占总数的百分数。扇形的大小由圆心角决定。',image:geoPieChart([{label:'A30%',value:30,color:'#4A90D9'},{label:'B45%',value:45,color:'#F4A261'},{label:'C25%',value:25,color:'#27AE60'}])}));
+    templates.push(()=>({type:'choice',q:'在扇形统计图中，表示总数的是？',opts:['整个圆','扇形','圆心角','圆弧'],ans:0,explain:'扇形统计图中，整个圆表示总数（单位1），各个扇形表示各部分占总数的百分比。所有扇形的百分比加起来等于100%。',image:geoPieChart([{label:'甲40%',value:40,color:'#4A90D9'},{label:'乙35%',value:35,color:'#F4A261'},{label:'丙25%',value:25,color:'#27AE60'}])}));
+    templates.push(()=>{const p=randInt(20,50);return{type:'choice',q:`一个扇形统计图中，某部分占总体的${p}%，该部分对应的扇形圆心角是多少度？`,opts:[`${360*p/100}°`,`${p}°`,`${180*p/100}°`,`${90*p/100}°`],ans:0,explain:`圆心角 = 360° × 百分比 = 360° × ${p}% = ${360*p/100}°。整个圆是360°。`+geoSector(Math.round(360*p/100),40),image:geoSector(Math.round(360*p/100),40)};});
     templates.push(()=>({type:'choice',q:'要表示一个病人一天的体温变化情况，应选用？',opts:['折线统计图','条形统计图','扇形统计图','统计表'],ans:0,explain:'折线统计图能清楚地反映事物的变化趋势，适合表示体温变化。条形统计图适合比较数量多少，扇形统计图适合表示各部分占总体的百分比。'}));
     templates.push(()=>({type:'fill',q:'扇形统计图中，所有扇形的百分比之和等于____',ans:'100%',explain:'扇形统计图中，各个扇形表示各部分占总数的百分比，所有部分加起来就是整体，所以百分比之和等于100%（或1）。'}));
-    templates.push(()=>({type:'fill',q:'一个扇形的圆心角是90°，它占总体的____%',ans:'25',explain:'百分比 = 圆心角 ÷ 360° × 100% = 90° ÷ 360° × 100% = 25%。90°是360°的1/4，所以占25%。'}));
-    templates.push(()=>{const n=randInt(30,80);return{type:'app',q:`六年级学生参加课外活动，体育组占40%，美术组占25%，音乐组占20%，其他占15%。如果体育组有${n}人，六年级共有多少人？`,ans:`${n/0.4}`,explain:`体育组${n}人对应40%，总人数 = 部分量 ÷ 对应百分比 = ${n} ÷ 40% = ${n} ÷ 0.4 = ${n/0.4}人。验证：${n/0.4}×40%=${n}人。`};});
+    templates.push(()=>({type:'fill',q:'一个扇形的圆心角是90°，它占总体的____%',ans:'25',explain:'百分比 = 圆心角 ÷ 360° × 100% = 90° ÷ 360° × 100% = 25%。90°是360°的1/4，所以占25%。',image:geoSector(90,40)}));
+    templates.push(()=>{const n=randInt(30,80);return{type:'app',q:`六年级学生参加课外活动，体育组占40%，美术组占25%，音乐组占20%，其他占15%。如果体育组有${n}人，六年级共有多少人？`,ans:`${n/0.4}`,explain:`体育组${n}人对应40%，总人数 = 部分量 ÷ 对应百分比 = ${n} ÷ 40% = ${n} ÷ 0.4 = ${n/0.4}人。验证：${n/0.4}×40%=${n}人。`,image:geoPieChart([{label:'体育40%',value:40,color:'#4A90D9'},{label:'美术25%',value:25,color:'#F4A261'},{label:'音乐20%',value:20,color:'#27AE60'},{label:'其他15%',value:15,color:'#E74C3C'}])};});
     // 扩充题目
     templates.push(()=>({type:'choice',q:'要表示我校各年级人数占全校总人数的百分比，应选用？',opts:['扇形统计图','折线统计图','条形统计图','统计表'],ans:0,explain:'扇形统计图能清楚地表示各部分占总体的百分比，适合表示各年级人数占全校总人数的百分比。折线统计图适合表示变化趋势，条形统计图适合比较数量多少。'}));
-    templates.push(()=>({type:'choice',q:'在一个扇形统计图中，甲部分占30%，乙部分占45%，丙部分占25%，哪个部分对应的扇形圆心角最大？',opts:['乙部分','甲部分','丙部分','一样大'],ans:0,explain:'扇形圆心角=360°×百分比。百分比越大，圆心角越大。乙部分45%最大，所以乙部分对应的圆心角最大。乙的圆心角=360°×45%=162°。'}));
+    templates.push(()=>({type:'choice',q:'在一个扇形统计图中，甲部分占30%，乙部分占45%，丙部分占25%，哪个部分对应的扇形圆心角最大？',opts:['乙部分','甲部分','丙部分','一样大'],ans:0,explain:'扇形圆心角=360°×百分比。百分比越大，圆心角越大。乙部分45%最大，所以乙部分对应的圆心角最大。乙的圆心角=360°×45%=162°。',image:geoPieChart([{label:'甲30%',value:30,color:'#4A90D9'},{label:'乙45%',value:45,color:'#F4A261'},{label:'丙25%',value:25,color:'#27AE60'}])}));
     templates.push(()=>({type:'choice',q:'一个扇形统计图中，某部分对应的圆心角是72°，该部分占总体的百分之几？',opts:['20%','25%','30%','40%'],ans:0,explain:'百分比=圆心角÷360°×100%=72°÷360°×100%=0.2×100%=20%。72°是360°的1/5，所以占20%。'}));
     templates.push(()=>({type:'fill',q:'要统计某病人24小时内体温变化情况，应选用____统计图；要统计某校各年级人数，应选用____统计图；要统计某班学生喜欢各种运动的人数占全班人数的百分比，应选用____统计图',ans:'折线 条形 扇形',explain:'折线统计图适合表示变化趋势（体温变化）；条形统计图适合比较数量多少（各年级人数）；扇形统计图适合表示各部分占总体的百分比（喜欢各种运动的人数占比）。'}));
     templates.push(()=>({type:'fill',q:'一个扇形统计图中，A部分占35%，B部分占40%，C部分占____%',ans:'25',explain:'所有部分的百分比之和等于100%。C部分=100%-35%-40%=25%。验证：35%+40%+25%=100%。'}));
-    templates.push(()=>({type:'app',q:'某班有学生40人，在一次数学测试中，优秀的占25%，良好的占40%，及格的占25%，不及格的占10%。各等级分别有多少人？',ans:'优秀10人，良好16人，及格10人，不及格4人',explain:'优秀=40×25%=10人，良好=40×40%=16人，及格=40×25%=10人，不及格=40×10%=4人。验证：10+16+10+4=40人。'}));
-    templates.push(()=>({type:'app',q:'一个果园里，苹果树占45%，梨树占30%，桃树占25%。已知梨树有60棵，这个果园共有多少棵果树？苹果树和桃树各有多少棵？',ans:'共有200棵，苹果树90棵，桃树50棵',explain:'梨树60棵对应30%，总棵数=60÷30%=60÷0.3=200棵。苹果树=200×45%=90棵，桃树=200×25%=50棵。验证：90+60+50=200棵。'}));
+    templates.push(()=>({type:'app',q:'某班有学生40人，在一次数学测试中，优秀的占25%，良好的占40%，及格的占25%，不及格的占10%。各等级分别有多少人？',ans:'优秀10人，良好16人，及格10人，不及格4人',explain:'优秀=40×25%=10人，良好=40×40%=16人，及格=40×25%=10人，不及格=40×10%=4人。验证：10+16+10+4=40人。',image:geoPieChart([{label:'优秀25%',value:25,color:'#4A90D9'},{label:'良好40%',value:40,color:'#F4A261'},{label:'及格25%',value:25,color:'#27AE60'},{label:'不及格10%',value:10,color:'#E74C3C'}])}));
+    templates.push(()=>({type:'app',q:'一个果园里，苹果树占45%，梨树占30%，桃树占25%。已知梨树有60棵，这个果园共有多少棵果树？苹果树和桃树各有多少棵？',ans:'共有200棵，苹果树90棵，桃树50棵',explain:'梨树60棵对应30%，总棵数=60÷30%=60÷0.3=200棵。苹果树=200×45%=90棵，桃树=200×25%=50棵。验证：90+60+50=200棵。',image:geoPieChart([{label:'苹果45%',value:45,color:'#E74C3C'},{label:'梨30%',value:30,color:'#4A90D9'},{label:'桃25%',value:25,color:'#F4A261'}])}));
   }
   
   // ========== 六年级上册 第八单元：数学广角——数与形 ==========
   if(key==='6-up-math-m8'){
     templates.push(()=>({type:'choice',q:'观察数列：1，3，5，7，9，...，第10个数是？',opts:['19','21','17','23'],ans:0,explain:'这是连续奇数数列，第n个数 = 2n-1。第10个数 = 2×10-1 = 19。'}));
     templates.push(()=>({type:'choice',q:'观察数列：2，4，6，8，...，第n个数是？',opts:['2n','n+2','n²','2n+1'],ans:0,explain:'这是连续偶数数列，第n个数 = 2n。验证：n=1时2×1=2，n=2时2×2=4，都正确。'}));
-    templates.push(()=>({type:'choice',q:'1+3+5+7+9 = ?',opts:['25','24','26','23'],ans:0,explain:'从1开始的连续奇数相加，有几个数，和就是几的平方。1+3+5+7+9有5个数，和=5²=25。'}));
-    templates.push(()=>({type:'fill',q:'观察：1=1²，1+3=4=2²，1+3+5=9=3²，...，1+3+5+...+19 = ____',ans:'100',explain:'从1开始的连续奇数相加，有几个数和就是几的平方。1到19共有(19+1)÷2=10个奇数，所以和=10²=100。'}));
+    templates.push(()=>({type:'choice',q:'1+3+5+7+9 = ?',opts:['25','24','26','23'],ans:0,explain:'从1开始的连续奇数相加，有几个数，和就是几的平方。1+3+5+7+9有5个数，和=5²=25。',image:geoPattern(5)}));
+    templates.push(()=>({type:'fill',q:'观察：1=1²，1+3=4=2²，1+3+5=9=3²，...，1+3+5+...+19 = ____',ans:'100',explain:'从1开始的连续奇数相加，有几个数和就是几的平方。1到19共有(19+1)÷2=10个奇数，所以和=10²=100。',image:geoPattern(5)}));
     templates.push(()=>({type:'fill',q:'观察数列：1，4，9，16，25，...，第10个数是____',ans:'100',explain:'这是平方数数列，第n个数 = n²。第10个数 = 10² = 100。'}));
-    templates.push(()=>({type:'app',q:'用同样大小的黑色棋子摆图案：第1个图案用5枚棋子，第2个用8枚，第3个用11枚。按照这样的规律，第n个图案用多少枚棋子？第20个用多少枚？',ans:'第n个用3n+2枚，第20个用62枚',explain:'观察：第1个5枚，第2个8枚，第3个11枚，每次增加3枚。规律：第n个 = 5 + 3(n-1) = 3n+2枚。第20个 = 3×20+2 = 62枚。'+geoPattern(5)}));
+    templates.push(()=>({type:'app',q:'用同样大小的黑色棋子摆图案：第1个图案用5枚棋子，第2个用8枚，第3个用11枚。按照这样的规律，第n个图案用多少枚棋子？第20个用多少枚？',ans:'第n个用3n+2枚，第20个用62枚',explain:'观察：第1个5枚，第2个8枚，第3个11枚，每次增加3枚。规律：第n个 = 5 + 3(n-1) = 3n+2枚。第20个 = 3×20+2 = 62枚。'+geoPattern(5),image:geoPattern(5)}));
     templates.push(()=>({type:'app',q:'学校举行乒乓球比赛，有8名选手参加，如果每两人之间都要比赛一场，一共要比赛多少场？',ans:'28',explain:'这是组合问题。8名选手每两人赛一场，比赛场数 = 8×7÷2 = 28场。也可以想：第1人赛7场，第2人赛6场，...，总共=7+6+5+4+3+2+1=28场。'}));
     // 扩充题目
     templates.push(()=>({type:'choice',q:'观察数列：1，1，2，3，5，8，13，...，下一个数是？',opts:['21','20','19','22'],ans:0,explain:'这是斐波那契数列，从第三个数开始，每个数等于前两个数的和。1+1=2，1+2=3，2+3=5，...，8+13=21。下一个数是21。'}));
@@ -5850,7 +6338,7 @@ function getMathTemplates(grade,term,unitId){
     templates.push(()=>({type:'fill',q:'观察：2=1×2，6=2×3，12=3×4，20=4×5，...，第n个数是____',ans:'n(n+1)',explain:'观察规律：第1个2=1×2，第2个6=2×3，第3个12=3×4，第4个20=4×5。第n个数 = n×(n+1) = n(n+1)。验证：n=5时，5×6=30。'}));
     templates.push(()=>({type:'fill',q:'一张长方形纸，对折1次得到2层，对折2次得到4层，对折3次得到8层，...，对折n次得到____层',ans:'2ⁿ',explain:'每次对折层数翻倍。对折1次=2=2¹层，对折2次=4=2²层，对折3次=8=2³层，...，对折n次=2ⁿ层。这是等比数列，公比为2。'}));
     templates.push(()=>({type:'app',q:'一条直线把平面分成2部分，两条直线最多把平面分成4部分，三条直线最多把平面分成7部分，四条直线最多把平面分成几部分？n条直线呢？',ans:'四条11部分，n条1+n(n+1)/2部分',explain:'观察：1条直线2部分，2条直线4部分（+2），3条直线7部分（+3），4条直线11部分（+4）。规律：第n条直线最多增加n部分。n条直线最多分平面 = 1+1+2+3+...+n = 1+n(n+1)/2部分。'}));
-    templates.push(()=>({type:'app',q:'用小棒摆正方形：摆1个正方形用4根小棒，摆2个正方形用7根，摆3个正方形用10根。摆10个正方形用多少根小棒？摆n个呢？',ans:'摆10个用31根，摆n个用3n+1根',explain:'观察：1个正方形4根，2个7根（+3），3个10根（+3），每增加1个正方形增加3根小棒。规律：摆n个 = 4+3(n-1) = 3n+1根。摆10个 = 3×10+1 = 31根。'}));
+    templates.push(()=>({type:'app',q:'用小棒摆正方形：摆1个正方形用4根小棒，摆2个正方形用7根，摆3个正方形用10根。摆10个正方形用多少根小棒？摆n个呢？',ans:'摆10个用31根，摆n个用3n+1根',explain:'观察：1个正方形4根，2个7根（+3），3个10根（+3），每增加1个正方形增加3根小棒。规律：摆n个 = 4+3(n-1) = 3n+1根。摆10个 = 3×10+1 = 31根。',image:geoSticks(3)}));
   }
   
   // ========== 六年级下册 第一单元：负数 ==========
@@ -6302,6 +6790,7 @@ function generateChineseQuestions(grade,term,unitId,count=100){
     const q=t();
     q.id=`${unitId}_${String(i+1).padStart(2,'0')}`;
     q.diff=diffs[i%diffs.length];
+    autoIllustrate(q, unitId);
     questions.push(q);
   }
   return questions;
@@ -8491,6 +8980,7 @@ function renderExamPage(){
   if(q.type==='choice'){
     questionHtml = `<div class="question-type">选择题（${q.score}分）</div>
       <div class="question-text">${q.examIndex}. ${q.q}</div>
+      ${q.image?`<div class="q-image">${q.image}</div>`:''}
       <div class="options">
         ${q.opts.map((opt,i)=>`
           <div class="option ${state.answers[state.current]==i?'selected':''}" onclick="selectExamAnswer(${i})">
@@ -8502,14 +8992,17 @@ function renderExamPage(){
   }else if(q.type==='fill'){
     questionHtml = `<div class="question-type">填空题（${q.score}分）</div>
       <div class="question-text">${q.examIndex}. ${q.q}</div>
+      ${q.image?`<div class="q-image">${q.image}</div>`:''}
       <input type="text" class="answer-input" placeholder="请输入答案" value="${state.answers[state.current]||''}" oninput="state.examState.answers[state.current]=this.value" onchange="render()">`;
   }else if(q.type==='calc'){
     questionHtml = `<div class="question-type">计算题（${q.score}分）</div>
       <div class="question-text">${q.examIndex}. ${q.q}</div>
+      ${q.image?`<div class="q-image">${q.image}</div>`:''}
       <input type="text" class="answer-input" placeholder="请输入计算结果" value="${state.answers[state.current]||''}" oninput="state.examState.answers[state.current]=this.value" onchange="render()">`;
   }else{
     questionHtml = `<div class="question-type">应用题（${q.score}分）</div>
       <div class="question-text">${q.examIndex}. ${q.q}</div>
+      ${q.image?`<div class="q-image">${q.image}</div>`:''}
       <textarea class="answer-textarea" placeholder="请写出解题过程和答案" oninput="state.examState.answers[state.current]=this.value">${state.answers[state.current]||''}</textarea>`;
   }
   
