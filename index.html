@@ -1580,7 +1580,7 @@ a{text-decoration:none;color:inherit}
 
 /* ===== 导航上移 + 配图放大（2026-08-31 整改） ===== */
 .qnav{display:flex;align-items:center;gap:10px;justify-content:space-between;position:sticky;top:0;z-index:30;background:rgba(255,255,255,.97);padding:10px 4px;margin-bottom:10px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
-.qnav .btn{margin:0;flex:0 0 auto}
+.qnav .btn{margin:0;flex:0 0 auto;width:auto;min-width:88px;padding:10px 16px;white-space:nowrap}
 .qnav-info{flex:1;text-align:center;font-size:14px;font-weight:700;color:#2c3e50}
 .exam-container .exam-nav{display:flex;align-items:center;gap:10px;justify-content:space-between;position:sticky;top:0;z-index:30;background:rgba(255,255,255,.97);padding:10px 4px;margin-bottom:10px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
 .exam-container .exam-nav .btn{margin:0;flex:0 0 auto}
@@ -13480,14 +13480,41 @@ function dedupeChoiceOpts(q){
 }
 
 // 渲染多空输入框（练习页用）
+function answerGuideText(q, n){
+  const t = String(q.q||'');
+  if(q.type==='calc') return '按 (1)(2)(3) 顺序填写各题结果，只写答案不写过程';
+  if(/运算符号/.test(t)) return '请在每个括号内填入正确的运算符号（+、-、×、÷）';
+  if(/注音|读音|拼音/.test(t)) return '请在括号内填入正确的拼音';
+  if(/单位/.test(t) && /填/.test(t)) return '请在括号内填入合适的单位';
+  if(q.type==='app') return n>1 ? '按题目顺序填写各问答案，只写结果' : '在下方输入框填写答案，只写结果';
+  return n>1 ? '按题目顺序填写各空答案' : '在下方输入框填写答案';
+}
+function answerPlaceholder(q, mode, i, n){
+  const t = String(q.q||'');
+  let hint = '';
+  if(/运算符号/.test(t)) hint = '填符号';
+  else if(/注音|读音|拼音/.test(t)) hint = '填拼音';
+  else if(/单位/.test(t) && /填/.test(t)) hint = '填单位';
+  else if(mode==='calc') hint = '填结果';
+  else hint = '填答案';
+  const label = (mode==='calc'?'结果':mode==='app'?'答案':'第'+(i+1)+'空');
+  return label + '·' + hint;
+}
 function renderAnswerInputs(q, currentAnswer, mode){
   const n=countAnswerInputs(q);
   const vals=Array.isArray(currentAnswer)?currentAnswer:(currentAnswer?String(currentAnswer).split(/\s+/).filter(Boolean):[]);
-  let html=`<div class="fill-group" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">`;
+  const guide=answerGuideText(q,n);
+  const badges=['①','②','③','④','⑤','⑥','⑦','⑧'];
+  let html=`<div class="fill-guide" style="font-size:13px;color:#666;background:#f7f9fb;border-radius:8px;padding:8px 12px;margin-bottom:10px;">💡 ${guide}</div>`;
+  html+=`<div class="fill-group" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">`;
   for(let i=0;i<n;i++){
     const v=(vals[i]!==undefined&&vals[i]!==null)?String(vals[i]).replace(/"/g,'&quot;'):'';
-    const ph=(mode==='calc'?'结果'+(i+1):mode==='app'?'答案'+(i+1):'第'+(i+1)+'空');
-    html+=`<input type="text" class="fill-input fill-item" style="width:${n>2?'130px':'170px'};" placeholder="${ph}" data-blank="${i}" value="${v}" oninput="updateFillAnswer(${i}, this.value)">`;
+    const ph=answerPlaceholder(q, mode, i, n);
+    const badge=badges[i]||('#'+(i+1));
+    html+=`<div class="fill-item-wrap" style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <span style="font-size:12px;color:#8a94a6;font-weight:600;">${badge}</span>
+      <input type="text" class="fill-input fill-item" style="width:${n>2?'116px':'160px'};" placeholder="${ph}" data-blank="${i}" value="${v}" oninput="updateFillAnswer(${i}, this.value)">
+    </div>`;
   }
   html+=`</div>`;
   return html;
