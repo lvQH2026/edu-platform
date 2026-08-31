@@ -11992,6 +11992,7 @@ function render(){
     case 'ipa-detail': html=renderIPADetailPage(); break;
     case 'knowledge': html=renderKnowledgePage(); break;
     case 'weak': html=renderWeakPage(); break;
+    case 'reviewSystem': html=renderReviewSystemPage(); break;
   }
   app.innerHTML=html;
   bindEvents();
@@ -12170,6 +12171,525 @@ function exportReport(){
   }
 }
 
+
+// ============================================
+// 小升初系统总复习（2026-08-31）
+// ============================================
+const REVIEW_DATA = {
+  chinese: {
+    name: '语文', color: '#4F6DF5', icon: '📖',
+    modules: [
+      { name: '一、基础知识', icon: '📖', topics: [
+        { name: '拼音', freq: 'h', kw: ['汉语拼音','拼音'],
+          keyPoints: ['声母/韵母/整体认读音节','音序查字法','多音字辨析（按义定音）','轻声音节','儿化音'],
+          types: ['给加点字选正确读音','看拼音写词语','多音字组词'],
+          diff: '难点：多音字“据义定音”', err: '易错：前后鼻音、平翘舌、整体认读音节混淆' },
+        { name: '汉字', freq: 'h', kw: ['识字','字谜','汉字','遨游汉字'],
+          keyPoints: ['笔画笔顺','偏旁部首','查字典','形近字/同音字/多音字辨析','错别字订正','汉字构造（会意/形声）'],
+          types: ['选正确字形','找出错别字','换偏旁组字'],
+          diff: '难点：形近字区分、易错笔画', err: '易错：多笔少点、同音替代（如“再接再厉”写成“励”）' },
+        { name: '词语', freq: 'h', kw: ['词语','词','对韵','成语','ABB'],
+          keyPoints: ['近/反义词','词语搭配','成语理解与运用','ABB/AABB/ABAB/又A又B式','量词','词语感情色彩'],
+          types: ['选词填空','成语填空','词语造句'],
+          diff: '难点：成语语境运用、感情色彩', err: '易错：望文生义（如“万人空巷”）、搭配不当' },
+        { name: '句子', freq: 'h', kw: ['句','句子','修辞','病句','反问'],
+          keyPoints: ['修改病句（成分残缺/搭配不当/语序/重复）','关联词运用','修辞（比喻/拟人/排比/夸张/反问/设问/对偶）','句式转换','扩句缩句','仿写','标点符号'],
+          types: ['修改病句','句子仿写','加标点'],
+          diff: '难点：病句辨析、直接引语转间接引语', err: '易错：改病句只改一半、标点混用（逗号/顿号/分号）' },
+        { name: '标点', freq: 'm', kw: ['标点'],
+          keyPoints: ['句号/问号/感叹号/逗号/顿号/分号/冒号/引号/省略号/书名号的作用与用法'],
+          types: ['给句段加标点','判断标点用法正误'],
+          diff: '难点：引号内标点、省略号作用', err: '易错：引号、书名号、顿号与逗号误用' }
+      ]},
+      { name: '二、积累运用', icon: '📚', topics: [
+        { name: '古诗文背诵与理解', freq: 'h', kw: ['古诗','诗','词','诗词','古诗词','日积月累'],
+          keyPoints: ['课标必背古诗词75首（默写、补全、理解诗意、名句运用）','文言文名句','诗题/作者对应'],
+          types: ['诗句默写','按情境写诗句','判断诗句出处'],
+          diff: '难点：理解性默写（按情境）、易混诗', err: '易错：错别字（“燕”与“雁”）、张冠李戴' },
+        { name: '日积月累与名言', freq: 'm', kw: ['日积月累','名言','谚语','歇后语','传统节日','综合性学习'],
+          keyPoints: ['课本“日积月累”板块','名人名言','歇后语','谚语','对联'],
+          types: ['补充名句','名言运用'],
+          diff: '难点：名言主题归类', err: '易错：名言断句、主题归类混乱' },
+        { name: '文学常识与名著', freq: 'm', kw: ['名著','文学','寓言','神话','民间故事','经典','传说'],
+          keyPoints: ['四大名著常识','课文作者与国籍','中外文学常识','寓言/神话/民间故事'],
+          types: ['选择/连线','名著人物判断'],
+          diff: '难点：名著情节细节', err: '易错：人物与作品错配' },
+        { name: '文言文启蒙', freq: 'm', kw: ['文言','文言文'],
+          keyPoints: ['课文文言小短文（如《杨氏之子》《两小儿辩日》）','常见实词（之/其/而/以）','断句','翻译'],
+          types: ['解释加点字','句子翻译','道理概括'],
+          diff: '难点：一词多义、文言句式', err: '易错：实词翻译想当然' }
+      ]},
+      { name: '三、阅读理解', icon: '📄', topics: [
+        { name: '记叙文阅读', freq: 'h', kw: ['课文','阅读','故事'],
+          keyPoints: ['概括主要内容（六要素）','理解重点词句','体会中心思想','分析人物形象','把握表达方式/顺序','环境描写作用','标题含义'],
+          types: ['短文阅读','归纳段意','谈感受'],
+          diff: '难点：概括中心、词句含义', err: '易错：答题不全（漏点）、口语化作答' },
+        { name: '说明文阅读', freq: 'h', kw: ['说明','科学','自然','太阳','松鼠','琥珀','恐龙','纳米','宇宙','海底','大自然','蝴蝶','雷达'],
+          keyPoints: ['说明对象及特征','说明方法（列数字/举例子/打比方/作比较/下定义）','说明顺序','语言准确性'],
+          types: ['判断说明方法','分析加点词能否删去'],
+          diff: '难点：说明方法辨析、“能否删去”答题思路', err: '易错：打比方与比喻混淆' },
+        { name: '非连续性文本', freq: 'm', kw: ['图表','非连续','数据','统计','综合性学习','信息'],
+          keyPoints: ['图表信息提取','材料对比','解决问题建议','广告/说明书阅读'],
+          types: ['图文结合','提取信息题'],
+          diff: '难点：跨材料归纳', err: '易错：遗漏图表条件、凭印象作答' },
+        { name: '古诗文/文言文阅读', freq: 'l', kw: ['文言','古诗','诗'],
+          keyPoints: ['课内外文言对比阅读','诗句赏析','情感把握'],
+          types: ['文言小语段','古诗对比阅读'],
+          diff: '难点：课内外迁移', err: '易错：翻译不直译、漏字' }
+      ]},
+      { name: '四、习作表达', icon: '✍️', topics: [
+        { name: '写人记事', freq: 'h', kw: ['人物','英雄','慈母','父爱','军神','狼牙山','长征','为人民服务','牛和鹅','雨来','男子汉','回忆'],
+          keyPoints: ['抓住人物特点','选择典型事例','按一定顺序记事','详略得当','开头结尾'],
+          types: ['写一个人/一件事'],
+          diff: '难点：选材新颖、细节描写', err: '易错：记流水账、跑题' },
+        { name: '写景状物', freq: 'm', kw: ['观潮','走月亮','荷花','燕子','天窗','乡下人家','草原','四季之美','白鹭','桂花雨','鸟的天堂','火烧云','海底世界','日出','双龙洞'],
+          keyPoints: ['观察顺序','抓住特点','情景交融','运用修辞'],
+          types: ['写一处景物/一件物品'],
+          diff: '难点：多角度描写', err: '易错：写景无重点' },
+        { name: '想象与应用文', freq: 'm', kw: ['想象','童话','神话','寓言','写话','日记','书信','小兔','续写'],
+          keyPoints: ['续写/扩写/看图作文/想象作文','书信、日记、读后感、建议书格式'],
+          types: ['续写故事','写一封信'],
+          diff: '难点：想象合理、格式规范', err: '易错：应用文格式（称呼/落款/日期）' },
+        { name: '审题立意与修改', freq: 'm', kw: ['习作','作文','写话','难忘小学生活'],
+          keyPoints: ['审清题意（关键词）','确立中心','列提纲','自评修改（语句通顺/错别字）'],
+          types: ['作文审题练习'],
+          diff: '难点：立意不跑题', err: '易错：忽略题目限制词' }
+      ]}
+    ]
+  },
+  math: {
+    name: '数学', color: '#34A853', icon: '🔢',
+    modules: [
+      { name: '一、数与代数', icon: '🔢', topics: [
+        { name: '数的认识', freq: 'h', kw: ['数的认识','大数的认识','小数的意义','分数的意义','因数与倍数','百分数','负数','11-20','100以内数的认识','万以内数的认识','小数的初步认识','分数的初步认识','质数','合数','公因数','公倍数','认识'],
+          keyPoints: ['整数/小数/分数/百分数的意义与读写','数的改写与求近似数','因数与倍数（2/3/5倍数特征）','质数合数','公因数公倍数','正负数'],
+          types: ['填空','判断','按顺序排列数'],
+          diff: '难点：因数倍数综合、分数小数百分数互化', err: '易错：0和1的特殊性、倍数特征记混' },
+        { name: '数的运算', freq: 'h', kw: ['加法','减法','乘法','除法','混合运算','四则运算','运算定律','计算','退位','进位','小数乘','小数除','分数乘','分数除','表内乘','表内除','有余数','简便','两位','三位数'],
+          keyPoints: ['四则混合运算（运算顺序）','简便运算（加法/乘法交换律结合律、乘法分配律、减法性质、除法性质）','估算','口算笔算'],
+          types: ['直接写得数','脱式计算（能简算要简算）','解方程'],
+          diff: '难点：乘法分配律逆用、去括号变号', err: '易错：运算顺序错、分配律漏乘、符号错误' },
+        { name: '式与方程', freq: 'h', kw: ['简易方程','方程','等式','字母表示'],
+          keyPoints: ['用字母表示数','等式的性质','解方程','列方程解应用题（和差倍、分数问题）'],
+          types: ['解方程','列方程解应用'],
+          diff: '难点：找等量关系', err: '易错：移项不变号、含未知数两边' },
+        { name: '比和比例', freq: 'h', kw: ['比','比例','正比例','反比例','按比例'],
+          keyPoints: ['比的意义/基本性质/化简比/求比值','按比例分配','比例的意义与基本性质','解比例','正反比例判断','比例尺'],
+          types: ['化简比','解比例','按比例分配应用'],
+          diff: '难点：正反比例判断', err: '易错：比与分数混淆、比值与最简比混淆、比例尺单位' },
+        { name: '量的计量', freq: 'm', kw: ['厘米','米','毫米','分米','千米','吨','克','千克','公顷','平方千米','时分秒','年月日','钟表','人民币','元','角','长度','测量','认识时间'],
+          keyPoints: ['长度/面积/体积/质量/时间/货币单位','单位换算（进率）','名数改写'],
+          types: ['单位换算','填合适单位'],
+          diff: '难点：复合单位换算', err: '易错：进率记错（公顷/平方千米、升/毫升）、时间进制60' },
+        { name: '探索规律', freq: 'm', kw: ['找规律','规律','数与形','周期'],
+          keyPoints: ['数列规律','图形规律','周期问题'],
+          types: ['找规律填数','第N个图形'],
+          diff: '难点：抽象规律', err: '易错：周期余数处理' }
+      ]},
+      { name: '二、图形与几何', icon: '📐', topics: [
+        { name: '平面图形', freq: 'h', kw: ['长方形','正方形','三角形','平行四边形','梯形','圆','角','面积','周长','多边形','图形','扇形','角的初步','角的度量'],
+          keyPoints: ['直线/射线/线段/角','角的度量与分类','三角形（分类、内角和、三边关系）','平行四边形与梯形','圆（特征、周长、面积、扇形）'],
+          types: ['概念选择','求周长面积','画图操作'],
+          diff: '难点：组合图形面积、圆环面积、三角形三边关系', err: '易错：面积周长公式混用、π取值、单位²' },
+        { name: '立体图形', freq: 'h', kw: ['长方体','正方体','圆柱','圆锥','体积','容积','观察物体','立体','认识图形'],
+          keyPoints: ['长方体/正方体（棱长和、表面积、体积）','圆柱（侧面积、表面积、体积）','圆锥（体积）','体积与容积'],
+          types: ['求表面积体积','等积变形','水中浸物'],
+          diff: '难点：圆柱圆锥关系、排水法', err: '易错：侧面积与表面积、π计算、单位换算' },
+        { name: '图形与位置', freq: 'm', kw: ['位置','方向','东南西北','数对','方位','比例尺','图形与位置'],
+          keyPoints: ['方向与路线（东南西北/偏角）','用数对确定位置','比例尺应用（图上距离/实际距离）'],
+          types: ['描述路线','数对定位','比例尺计算'],
+          diff: '难点：方向偏角表述', err: '易错：比例尺单位、“南偏东”与“东偏南”' },
+        { name: '图形变换', freq: 'm', kw: ['轴对称','平移','旋转','对称','图形的运动'],
+          keyPoints: ['轴对称图形','平移与旋转','图形的放大与缩小（按比例）'],
+          types: ['操作画图','判断对称轴'],
+          diff: '难点：组合变换', err: '易错：对称轴条数、旋转方向角度' }
+      ]},
+      { name: '三、统计与概率', icon: '📊', topics: [
+        { name: '统计', freq: 'h', kw: ['统计','统计表','统计图','平均数','数据收集','条形','折线','扇形统计','复式统计'],
+          keyPoints: ['平均数/中位数/众数','条形/折线/扇形统计图（读图、绘制、分析）','数据收集整理'],
+          types: ['读图填空','根据扇形图求部分量'],
+          diff: '难点：扇形统计图百分比与总量互推', err: '易错：平均与总数关系、图表单位' },
+        { name: '可能性', freq: 'l', kw: ['可能性'],
+          keyPoints: ['可能/一定/不可能','可能性大小比较','游戏公平性'],
+          types: ['判断','概率初步'],
+          diff: '难点：可能性大小比较', err: '易错：可能性大小与数量关系' }
+      ]},
+      { name: '四、综合与实践', icon: '🧩', topics: [
+        { name: '植树问题', freq: 'm', kw: ['植树','间隔','植树问题'],
+          keyPoints: ['两端都栽/一端栽/两端不栽/封闭图形植树','间隔数与棵数关系'],
+          types: ['应用'],
+          diff: '难点：三种情况区分', err: '易错：+1/-1 误判' },
+        { name: '鸡兔同笼', freq: 'm', kw: ['鸡兔同笼','假设法','头脚'],
+          keyPoints: ['假设法/方程法解鸡兔同笼','类似问题（车船/头脚）'],
+          types: ['应用'],
+          diff: '难点：假设法逻辑', err: '易错：差数计算' },
+        { name: '找次品与优化', freq: 'l', kw: ['找次品','优化','沏茶','烙饼','统筹'],
+          keyPoints: ['找次品（天平称重最多次数）','沏茶/烙饼问题（统筹安排）'],
+          types: ['策略题'],
+          diff: '难点：最优策略', err: '易错：分组方式' },
+        { name: '鸽巢原理', freq: 'l', kw: ['鸽巢','抽屉','鸽巢问题'],
+          keyPoints: ['最不利原则','抽屉数/物体数'],
+          types: ['说理题'],
+          diff: '难点：构造抽屉', err: '易错：+1 还是 +0' },
+        { name: '搭配与排列组合', freq: 'l', kw: ['搭配','排列','组合','握手','搭配问题'],
+          keyPoints: ['简单排列组合','搭配问题（服装/路线）','握手问题'],
+          types: ['计数'],
+          diff: '难点：有序思考', err: '易错：重复/遗漏' }
+      ]}
+    ]
+  },
+  english: {
+    name: '英语', color: '#F59E0B', icon: '🔤',
+    modules: [
+      { name: '一、语音（拼读）', icon: '🔤', topics: [
+        { name: '字母与音标', freq: 'h', kw: [],
+          keyPoints: ['26字母（顺序、大小写、手写体）','48个国际音标认读','元音/辅音分类','字母组合发音（ee/ea/oo/ow/ai 等）'],
+          types: ['辨音','选出发音不同的单词'],
+          diff: '难点：元音字母组合', err: '易错：/i:/与/i/、/θ/与/s/混淆' },
+        { name: '自然拼读', freq: 'm', kw: [],
+          keyPoints: ['辅音字母发音','短元音/长元音规则','CVC拼读','常见词族（-at/-en/-op）'],
+          types: ['看词选音','拼读单词'],
+          diff: '难点：长元音规则', err: '易错：不发音字母（e 结尾）' },
+        { name: '重音与节奏', freq: 'l', kw: [],
+          keyPoints: ['单词重音','升降调','连读现象初步'],
+          types: ['重音判断'],
+          diff: '难点：多音节重音', err: '易错：多音节重音位置' }
+      ]},
+      { name: '二、词汇', icon: '📝', topics: [
+        { name: '核心话题词汇', freq: 'h', kw: [],
+          keyPoints: ['数字/颜色/家庭成员/动物/食物饮料/学校/身体/衣物/天气季节/职业/方位/交通/时间日期/运动爱好 等 14 大话题核心词'],
+          types: ['看图选词','词图配对','单词拼写'],
+          diff: '难点：话题词归类记忆', err: '易错：形近词（where/were）、拼写' },
+        { name: '动词与短语', freq: 'h', kw: [],
+          keyPoints: ['常用动词原形/三单/现在分词/过去式','动词短语（get up, play football…）','固定搭配'],
+          types: ['动词适当形式','短语搭配'],
+          diff: '难点：动词变化规则', err: '易错：不规则过去式记混' },
+        { name: '名词与代词', freq: 'h', kw: [],
+          keyPoints: ['可数/不可数名词','名词复数（规则+不规则）','名词所有格','人称代词/物主代词/指示代词/不定代词'],
+          types: ['选择','单复数转换'],
+          diff: '难点：代词主宾格/形容词性物主', err: '易错：复数+s/es规则、物主代词混用' },
+        { name: '数词与介词', freq: 'm', kw: [],
+          keyPoints: ['基数词/序数词','时间介词（in/on/at）','方位介词（in/on/under/beside…）'],
+          types: ['介词填空','序数词'],
+          diff: '难点：in/on/at 时间', err: '易错：序数词拼写（first/second/third）' }
+      ]},
+      { name: '三、语法', icon: '⚙️', topics: [
+        { name: 'be动词与一般现在时', freq: 'h', kw: [],
+          keyPoints: ['am/is/are 用法','主语与be动词一致','一般现在时（含三单加s）','频率副词'],
+          types: ['选be动词','三单填空'],
+          diff: '难点：三单变化', err: '易错：第三人称忘加s、be动词与实义动词混用' },
+        { name: '现在进行时', freq: 'm', kw: [],
+          keyPoints: ['be+doing','现在分词变化规则','标志词（now, look, listen）'],
+          types: ['进行时填空'],
+          diff: '难点：分词变化', err: '易错：漏be动词、双写末字母' },
+        { name: '一般过去时', freq: 'h', kw: [],
+          keyPoints: ['规则/不规则过去式','was/were','过去时间标志词'],
+          types: ['过去式填空'],
+          diff: '难点：不规则动词', err: '易错：go→went 等不规则变化' },
+        { name: '一般将来时', freq: 'm', kw: [],
+          keyPoints: ['be going to / will','将来时间标志词（tomorrow, next…）'],
+          types: ['将来时填空'],
+          diff: '难点：两种表达区别', err: '易错：be going to 漏be' },
+        { name: '句型与there be', freq: 'h', kw: [],
+          keyPoints: ['There be 句型（就近原则）','一般疑问句/特殊疑问句','否定句','祈使句','感叹句'],
+          types: ['句型转换','按要求改写'],
+          diff: '难点：疑问词选择、句型转换', err: '易错：there be 单复数、助动词漏用' }
+      ]},
+      { name: '四、话题与功能', icon: '💬', topics: [
+        { name: '日常交际话题', freq: 'h', kw: [],
+          keyPoints: ['问候/自我介绍/家庭/学校/爱好/点餐/购物/问路/时间日期/天气/看病 等情景对话'],
+          types: ['补全对话','情景选择','听力理解'],
+          diff: '难点：情景应答', err: '易错：答非所问（如 How old vs How many）' },
+        { name: '句型功能', freq: 'm', kw: [],
+          keyPoints: ['询问与回答：What is this/that? Where is…? How many…? What time…? Whose…?'],
+          types: ['问答配对'],
+          diff: '难点：特殊疑问句语序', err: '易错：语序错' },
+        { name: '听力策略', freq: 'm', kw: [],
+          keyPoints: ['听关键词','听数字/时间/颜色','推断人物关系'],
+          types: ['听录音连线/选择'],
+          diff: '难点：数字听辨', err: '易错：数字听辨（-teen/-ty）' }
+      ]},
+      { name: '五、阅读与写作', icon: '📖', topics: [
+        { name: '阅读理解', freq: 'h', kw: [],
+          keyPoints: ['短文阅读（判断对错/选择/回答问题）','看图理解'],
+          types: ['阅读判断','阅读选择'],
+          diff: '难点：细节定位', err: '易错：凭印象不看原文' },
+        { name: '书面表达', freq: 'm', kw: [],
+          keyPoints: ['仿写句子','看图写话','小短文（My Day / My Family / My Favourite…）'],
+          types: ['看图写话','小作文'],
+          diff: '难点：句型组织', err: '易错：主谓不一致、漏be动词' },
+        { name: '书面规范', freq: 'l', kw: [],
+          keyPoints: ['大小写/标点/单词间距','字母书写规范'],
+          types: ['规范抄写'],
+          diff: '难点：书写规范', err: '易错：句首小写、标点中英混用' }
+      ]}
+    ]
+  }
+};
+
+function loadXscStats(){ try { return JSON.parse(localStorage.getItem('edu_xsc_stats')) || {}; } catch(e){ return {}; } }
+function saveXscStats(s){ try { localStorage.setItem('edu_xsc_stats', JSON.stringify(s)); } catch(e){} }
+function xscKey(subject, topic){ return subject + '|' + topic; }
+function markXscStarted(subject, topic){
+  var s = loadXscStats(); var k = xscKey(subject, topic);
+  if(!s[k]) s[k] = {attempts: 0, correct: 0, total: 0, best: 0};
+  s[k].attempts += 1;
+  s[k].lastDate = new Date().toISOString().split('T')[0];
+  saveXscStats(s);
+}
+function markXscResult(subject, topic, correct, total){
+  var s = loadXscStats(); var k = xscKey(subject, topic);
+  if(!s[k]) s[k] = {attempts: 0, correct: 0, total: 0, best: 0};
+  s[k].correct += correct; s[k].total += total;
+  var acc = total > 0 ? Math.round(correct / total * 100) : 0;
+  if(acc > s[k].best) s[k].best = acc;
+  s[k].lastDate = new Date().toISOString().split('T')[0];
+  saveXscStats(s);
+}
+function xscTopicStats(subject, topic){
+  var s = loadXscStats(); var k = xscKey(subject, topic);
+  var it = s[k];
+  if(!it) return {attempts: 0, best: 0, acc: 0};
+  var acc = it.total > 0 ? Math.round(it.correct / it.total * 100) : 0;
+  return {attempts: it.attempts, best: it.best, acc: acc};
+}
+
+function allReviewUnits(subject){
+  var list = [];
+  ['1','2','3','4','5','6'].forEach(function(g){
+    ['up','down'].forEach(function(t){
+      try {
+        var us = CURRICULUM[g][t][subject].units;
+        us.forEach(function(u){ list.push({g: g, t: t, id: u.id, topics: (u.topics||''), name: u.name||''}); });
+      } catch(e){}
+    });
+  });
+  return list;
+}
+function matchReviewUnits(subject, kw){
+  if(!kw || !kw.length) return [];
+  var list = [];
+  var units = allReviewUnits(subject);
+  units.forEach(function(u){
+    var text = u.topics + u.name;
+    var hit = false;
+    for(var i=0;i<kw.length;i++){ if(text.indexOf(kw[i]) > -1){ hit = true; break; } }
+    if(hit) list.push(u);
+  });
+  return list;
+}
+function dedupeReviewQuestions(qs){
+  var seen = {}; var out = [];
+  qs.forEach(function(q){
+    var stem = (q.stem || q.question || q.q || '').toString().trim();
+    if(!stem) { out.push(q); return; }
+    var key = stem.slice(0, 30);
+    if(!seen[key]){ seen[key] = 1; out.push(q); }
+  });
+  return out;
+}
+
+function startXscReviewPractice(subject, modName, topicName, layer){
+  var topic = null;
+  (REVIEW_DATA[subject].modules || []).forEach(function(m){
+    m.topics.forEach(function(t){ if(t.name === topicName){ topic = t; } });
+  });
+  if(!topic){ alert('未找到该专题'); return; }
+  if(subject === 'english'){ navigate('english'); return; }
+
+  var units = matchReviewUnits(subject, topic.kw);
+  if(!units.length) units = allReviewUnits(subject);
+  if(!units.length){ alert('该专题暂无题库'); return; }
+
+  var questions = [];
+  units.forEach(function(u){
+    try {
+      var qs = subject === 'math' ? generateMathQuestions(u.g, u.t, u.id, 6) : generateChineseQuestions(u.g, u.t, u.id, 6);
+      if(qs && qs.length){
+        qs.forEach(function(q){ if(!q.reviewFrom) q.reviewFrom = u.g + '年级' + (u.t==='up'?'上':'下') + '·' + u.id; });
+        questions = questions.concat(qs);
+      }
+    } catch(e){}
+  });
+  questions = dedupeReviewQuestions(questions);
+  questions.sort(function(){ return Math.random() - 0.5; });
+  var count = 12;
+  questions = questions.slice(0, count);
+  if(questions.length < 4){ alert('该专题题库不足，请稍后再试'); return; }
+
+  var ratios = { basic: [0.75, 0.2, 0.05], mid: [0.4, 0.4, 0.2], high: [0.1, 0.35, 0.55] };
+  var r = ratios[layer] || ratios.basic;
+  var bC = Math.round(questions.length * r[0]);
+  var mC = Math.round(questions.length * r[1]);
+  for(var i=0;i<questions.length;i++){
+    questions[i].diff = i < bC ? 'basic' : (i < bC + mC ? 'medium' : 'hard');
+  }
+
+  var typeWeights = {choice: 1, fill: 1.5, calc: 2, app: 3};
+  var totalW = 0;
+  questions.forEach(function(q){ totalW += (typeWeights[q.type] || 1); });
+  questions.forEach(function(q){
+    q.score = Math.round(((typeWeights[q.type] || 1) / totalW * 100) * 10) / 10;
+  });
+  var sumS = questions.reduce(function(s,q){ return s + q.score; }, 0);
+  questions[questions.length-1].score += Math.round((100 - sumS) * 10) / 10;
+
+  markXscStarted(subject, topicName);
+  STATE.examState = {
+    type: 'review_practice',
+    title: '小升初总复习 · ' + topicName,
+    reviewSection: topicName,
+    questions: questions,
+    current: 0,
+    answers: new Array(questions.length).fill(null),
+    correct: new Array(questions.length).fill(false),
+    socratesActive: false,
+    socratesSteps: [],
+    socratesCurrent: 0,
+    showHint: false,
+    showExplain: false,
+    submitted: false,
+    timeUsed: 0,
+    startTime: Date.now(),
+    reviewMeta: {subject: subject, mod: modName, topic: topicName, layer: layer}
+  };
+  navigate('practice');
+}
+
+function setReviewSubject(s){ STATE.reviewSubject = s; render(); }
+function toggleReviewTopic(modName, topicName){
+  var k = modName + '|' + topicName;
+  if(!STATE.reviewExpand) STATE.reviewExpand = {};
+  STATE.reviewExpand[k] = !STATE.reviewExpand[k];
+  render();
+}
+function reviewFreqTag(f){
+  if(f === 'h') return '<span class="xsc-freq xsc-freq-h">高频</span>';
+  if(f === 'm') return '<span class="xsc-freq xsc-freq-m">中频</span>';
+  return '<span class="xsc-freq xsc-freq-l">低频</span>';
+}
+
+function renderReviewSystemPage(){
+  if(!STATE.reviewSubject) STATE.reviewSubject = 'math';
+  if(!STATE.reviewExpand) STATE.reviewExpand = {};
+  var subj = STATE.reviewSubject;
+  var data = REVIEW_DATA[subj];
+  var subjName = data.name;
+  var icon = data.icon;
+
+  // 进度统计（该科目做过专题数 / 总专题数 + 平均最佳正确率）
+  var totalTopics = 0, doneTopics = 0, bestSum = 0, bestCnt = 0;
+  var s = loadXscStats();
+  data.modules.forEach(function(m){ m.topics.forEach(function(t){
+    totalTopics++;
+    var k = xscKey(subj, t.name);
+    if(s[k] && s[k].attempts > 0){ doneTopics++; bestSum += (s[k].best || 0); bestCnt++; }
+  }); });
+  var donePct = totalTopics > 0 ? Math.round(doneTopics / totalTopics * 100) : 0;
+  var avgBest = bestCnt > 0 ? Math.round(bestSum / bestCnt) : 0;
+
+  // 阶段定义
+  var phases = [
+    {no:'阶段一', name:'基础梳理', pct:'约2-3周 · 30%', desc:'看思维导图→考点清单→基础题巩固，每模块末过关小测'},
+    {no:'阶段二', name:'专项突破', pct:'约4-5周 · 40%', desc:'按频次优先训练，错题入库+苏格拉底纠错，正确率≥85%晋级'},
+    {no:'阶段三', name:'综合模拟', pct:'约2-3周 · 20%', desc:'按小升初真题结构整套计时模拟，家长端看得分率'},
+    {no:'阶段四', name:'查漏补缺', pct:'约1-2周 · 10%', desc:'错题本一键重做，薄弱考点定向补练，考前状态调整'}
+  ];
+
+  var html = '<div class="page" style="padding-bottom:70px">';
+  html += '<style>'
+    + '.xsc-hdr{background:linear-gradient(135deg,#4F6DF5,#7C5CF0);color:#fff;padding:14px 16px;border-radius:0 0 16px 16px;}'
+    + '.xsc-hdr .t{font-size:18px;font-weight:800;letter-spacing:.5px;}'
+    + '.xsc-hdr .s{font-size:12px;opacity:.92;margin-top:2px;}'
+    + '.xsc-progress{background:rgba(255,255,255,.16);border-radius:10px;padding:8px 12px;margin-top:10px;font-size:12px;}'
+    + '.xsc-progress .bar{height:8px;background:rgba(255,255,255,.28);border-radius:6px;margin-top:6px;overflow:hidden;}'
+    + '.xsc-progress .bar i{display:block;height:100%;background:#fff;border-radius:6px;transition:width .4s;}'
+    + '.xsc-subj{display:flex;gap:10px;padding:12px 14px 4px;}'
+    + '.xsc-subj .item{flex:1;text-align:center;padding:9px 0;border-radius:12px;background:#fff;border:1.5px solid #E2E8F0;font-weight:700;font-size:14px;color:#64748B;cursor:pointer;}'
+    + '.xsc-subj .item.on{background:linear-gradient(135deg,#4F6DF5,#7C5CF0);color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(79,109,245,.3);}'
+    + '.xsc-phases{display:flex;gap:6px;padding:10px 14px 2px;overflow-x:auto;}'
+    + '.xsc-phase{flex:0 0 auto;min-width:132px;background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:8px 10px;}'
+    + '.xsc-phase .no{font-size:11px;color:#7C5CF0;font-weight:700;}'
+    + '.xsc-phase .nm{font-size:13px;font-weight:700;}'
+    + '.xsc-phase .pc{font-size:11px;color:#94A3B8;}'
+    + '.xsc-phase .ds{font-size:11px;color:#64748B;margin-top:3px;line-height:1.4;}'
+    + '.xsc-mod{background:#fff;border-radius:14px;margin:12px 14px;padding:14px;box-shadow:0 1px 4px rgba(15,23,42,.06);border:1px solid #EEF1F6;}'
+    + '.xsc-mod-h{font-size:15px;font-weight:800;color:#2D3A54;margin-bottom:10px;display:flex;align-items:center;gap:8px;}'
+    + '.xsc-topic{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:11px 12px;margin-bottom:10px;}'
+    + '.xsc-topic-h{display:flex;align-items:center;justify-content:space-between;cursor:pointer;}'
+    + '.xsc-topic-nm{font-size:14px;font-weight:700;color:#0F172A;}'
+    + '.xsc-freq{font-size:11px;padding:1px 8px;border-radius:10px;font-weight:700;margin-left:6px;}'
+    + '.xsc-freq-h{background:#FEE2E2;color:#DC2626;}'
+    + '.xsc-freq-m{background:#FEF3C7;color:#D97706;}'
+    + '.xsc-freq-l{background:#D1FAE5;color:#059669;}'
+    + '.xsc-topic .open{color:#94A3B8;font-size:12px;}'
+    + '.xsc-topic-body{margin-top:10px;border-top:1px dashed #E2E8F0;padding-top:10px;font-size:12.5px;color:#334155;line-height:1.7;}'
+    + '.xsc-topic-body .lb{color:#64748B;font-size:12px;margin-top:6px;}'
+    + '.xsc-tag{display:inline-block;font-size:11px;background:#F1F5F9;color:#475569;padding:0 7px;border-radius:8px;margin:2px 3px 0 0;white-space:nowrap;}'
+    + '.xsc-layer{display:flex;gap:8px;margin-top:10px;}'
+    + '.xsc-layer button{flex:1;border:none;border-radius:10px;padding:8px 0;font-size:13px;font-weight:700;cursor:pointer;}'
+    + '.xsc-l-basic{background:#ECFDF5;color:#059669;}'
+    + '.xsc-l-mid{background:#FEF3C7;color:#D97706;}'
+    + '.xsc-l-high{background:#EEF2FF;color:#4F46E5;}'
+    + '.xsc-stat{font-size:11px;color:#94A3B8;margin-top:6px;}'
+    + '</style>';
+
+  html += '<div class="xsc-hdr">'
+    + '<div class="t">🎓 小升初系统总复习</div>'
+    + '<div class="s">' + icon + ' ' + subjName + ' · 1-6年级系统梳理 · 依据人教版教材与课标</div>'
+    + '<div class="xsc-progress">已练专题 ' + doneTopics + ' / ' + totalTopics + '（' + donePct + '%） · 平均最佳正确率 ' + avgBest + '%'
+    + '<div class="bar"><i style="width:' + donePct + '%"></i></div></div>'
+    + '</div>';
+
+  html += '<div class="xsc-subj">'
+    + ['chinese','math','english'].map(function(sk){
+        var d2 = REVIEW_DATA[sk];
+        return '<div class="item ' + (subj === sk ? 'on' : '') + '" onclick="setReviewSubject(\'' + sk + '\')">' + d2.icon + ' ' + d2.name + '</div>';
+      }).join('')
+    + '</div>';
+
+  html += '<div class="xsc-phases">'
+    + phases.map(function(p){ return '<div class="xsc-phase"><div class="no">' + p.no + '</div><div class="nm">' + p.name + '</div><div class="pc">' + p.pct + '</div><div class="ds">' + p.desc + '</div></div>'; }).join('')
+    + '</div>';
+
+  data.modules.forEach(function(m){
+    html += '<div class="xsc-mod"><div class="xsc-mod-h">' + m.icon + ' ' + m.name + '</div>';
+    m.topics.forEach(function(t){
+      var k = m.name + '|' + t.name;
+      var isOpen = STATE.reviewExpand[k];
+      var st = xscTopicStats(subj, t.name);
+      var stTxt = st.attempts > 0 ? ('已练 ' + st.attempts + ' 次 · 最佳 ' + st.best + '%') : '未练习';
+      html += '<div class="xsc-topic">'
+        + '<div class="xsc-topic-h" onclick="toggleReviewTopic(\'' + m.name.replace(/'/g, "\\'") + '\',\'' + t.name.replace(/'/g, "\\'") + '\')">'
+        + '<div class="xsc-topic-nm">' + t.name + reviewFreqTag(t.freq) + '</div>'
+        + '<div class="open">' + (isOpen ? '收起 ▲' : '展开 ▼') + '</div></div>';
+      if(isOpen){
+        html += '<div class="xsc-topic-body">'
+          + '<div class="lb">核心考点：</div>' + t.keyPoints.map(function(kp){ return '<span class="xsc-tag">' + kp + '</span>'; }).join('')
+          + '<div class="lb">典型题型：</div>' + t.types.map(function(tp){ return '<span class="xsc-tag">' + tp + '</span>'; }).join('')
+          + '<div class="lb">' + t.diff + '</div>'
+          + '<div class="lb">' + t.err + '</div>';
+        if(subj === 'english'){
+          html += '<div class="xsc-layer"><button style="background:#EEF2FF;color:#4F46E5;width:100%" onclick="navigate(\'english\')">前往英语版块学习 →</button></div>';
+        } else {
+          html += '<div class="xsc-layer">'
+            + '<button class="xsc-l-basic" onclick="startXscReviewPractice(\'' + subj + '\',\'' + m.name.replace(/'/g, "\\'") + '\',\'' + t.name.replace(/'/g, "\\'") + '\',\'basic\')">基础</button>'
+            + '<button class="xsc-l-mid" onclick="startXscReviewPractice(\'' + subj + '\',\'' + m.name.replace(/'/g, "\\'") + '\',\'' + t.name.replace(/'/g, "\\'") + '\',\'mid\')">提高</button>'
+            + '<button class="xsc-l-high" onclick="startXscReviewPractice(\'' + subj + '\',\'' + m.name.replace(/'/g, "\\'") + '\',\'' + t.name.replace(/'/g, "\\'") + '\',\'high\')">拔高</button>'
+            + '</div>';
+        }
+        html += '<div class="xsc-stat">' + stTxt + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+
+  html += '</div>';
+  return html;
+}
+
 function renderHeader(title,sub='',showBack=false){
   return `<div class="header">
     ${showBack?'<button class="back-btn" onclick="goBack()">← 返回</button>':''}
@@ -12224,6 +12744,7 @@ function renderGradePage(){
   quickHtml += '<div class="quick-action" onclick="navigate(\'paperGrade\')"><div class="qa-icon">📷</div><div class="qa-name">试卷批改</div><div class="qa-desc">拍卷AI批改</div></div>';
   quickHtml += '<div class="quick-action" onclick="navigate(\'weak\')"><div class="qa-icon">🎯</div><div class="qa-name">薄弱突破</div><div class="qa-desc">薄弱单元专练</div></div>';
   quickHtml += '<div class="quick-action" onclick="showExamModal()"><div class="qa-icon">📝</div><div class="qa-name">综合模拟</div><div class="qa-desc">模拟小升初综合卷</div></div>';
+  quickHtml += '<div class="quick-action" onclick="navigate(\'reviewSystem\')"><div class="qa-icon">🎓</div><div class="qa-name">小升初总复习</div><div class="qa-desc">三科系统复习</div></div>';
   
   return '<div class="page" style="padding-top:0">'+
     '<div class="dashboard-welcome"><div class="welcome-title">👋 你好，'+STATE.userData.name+'！</div><div class="welcome-sub">今天是学习的好日子，继续加油哦！</div>'+parentMsgHtml+'<div class="streak-badge">🔥 连续打卡 '+STATE.userData.streak+' 天</div></div>'+
@@ -14288,6 +14809,7 @@ function submitExam(){
   // 总复习板块练习：记录学情到reviewStats
   if (state.type === 'review_practice' && state.reviewSection) {
     recordReviewResult(state.reviewSection, correctCount, state.questions.length);
+    if (state.reviewMeta) { markXscResult(state.reviewMeta.subject, state.reviewMeta.topic, correctCount, state.questions.length); }
   }
 
   
