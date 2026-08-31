@@ -1076,119 +1076,188 @@ a{text-decoration:none;color:inherit}
 /* --- 响应式：PC大屏（1025px以上） --- */
 @media (min-width: 1025px){
   body{
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background: var(--bg-page);
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-xl) 0;
+    padding: 0;
   }
   .app{
-    max-width: 1200px;
-    width: 95%;
-    border-radius: var(--radius-xl);
-    box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 100px rgba(79,125,249,0.15);
-    overflow: hidden;
-    min-height: auto;
-    max-height: 95vh;
-    overflow-y: auto;
+    max-width: 100%;
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+    min-height: 100vh;
+    max-height: none;
+    overflow-y: visible;
     background: var(--bg-page);
   }
-  .app::-webkit-scrollbar{width:8px}
-  .app::-webkit-scrollbar-track{background:var(--bg-hover)}
-  .app::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--primary),var(--primary-dark));border-radius:4px}
   
   /* 大屏顶部导航 */
-  .top-nav{padding:0 var(--space-xl);height:64px}
+  .top-nav{padding:0 40px;height:64px;max-width:1600px;margin:0 auto}
   .top-nav .nav-title{font-size:var(--font-size-xl)}
   
   /* 大屏页面头部 */
-  .page-header{padding:var(--space-xl)}
+  .page-header{padding:40px}
   .page-header h1{font-size:var(--font-size-2xl)}
+  .page-header .back-btn{padding:10px 20px;font-size:var(--font-size-base)}
   
   /* 大屏页面容器 */
-  .page{padding:var(--space-xl)}
+  .page{padding:32px 40px;max-width:1600px;margin:0 auto}
   
   /* 大屏仪表盘 */
-  .dashboard-welcome{padding:var(--space-xl);margin-bottom:var(--space-xl)}
-  .dashboard-welcome .welcome-title{font-size:var(--font-size-xl)}
-  .stats-grid{grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-xl)}
-  .stat-card{padding:var(--space-lg)}
-  .stat-card .stat-num{font-size:var(--font-size-2xl)}
-  .quick-actions{grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-xl)}
-  .quick-action{padding:var(--space-lg) var(--space-md)}
-  .quick-action .qa-icon{font-size:36px}
-  .quick-action .qa-name{font-size:var(--font-size-sm)}
+  .dashboard-welcome{padding:40px;margin-bottom:32px}
+  .dashboard-welcome .welcome-title{font-size:28px}
+  .dashboard-welcome .welcome-sub{font-size:16px}
+  .dashboard-welcome .streak-badge{padding:8px 16px;font-size:14px}
+  .stats-grid{grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:32px}
+  .stat-card{padding:28px 20px}
+  .stat-card .stat-num{font-size:36px}
+  .stat-card .stat-label{font-size:14px}
+  .quick-actions{grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:32px}
+  .quick-action{padding:28px 20px}
+  .quick-action .qa-icon{font-size:40px}
+  .quick-action .qa-name{font-size:15px}
+  .quick-action .qa-desc{font-size:12px}
   
-  /* 大屏年级选择 */
-  .grade-grid{grid-template-columns:repeat(6,1fr);gap:var(--space-lg);max-width:1000px;margin:0 auto}
-  .grade-card{padding:var(--space-2xl) var(--space-md)}
-  .grade-card .grade-num{font-size:56px}
-  .grade-card .grade-name{font-size:var(--font-size-base)}
+  /* 大屏今日任务 */
+  .today-tasks{padding:24px 28px;margin-bottom:32px}
+  .task-item{padding:12px 0}
+  .task-name{font-size:15px}
+  .task-meta{font-size:13px}
   
-  /* 大屏册别/科目选择 */
-  .term-grid{grid-template-columns:repeat(2,1fr);gap:var(--space-xl);max-width:800px;margin:0 auto}
-  .term-card{padding:var(--space-2xl)}
-  .subject-grid{grid-template-columns:repeat(3,1fr);gap:var(--space-xl);max-width:900px;margin:0 auto}
-  .subject-card{padding:var(--space-xl)}
+  /* 大屏年级选择 - 充分利用宽度 */
+  .grade-grid{grid-template-columns:repeat(6,1fr);gap:24px;max-width:100%}
+  .grade-card{padding:48px 20px}
+  .grade-card .grade-num{font-size:64px}
+  .grade-card .grade-name{font-size:16px}
   
-  /* 大屏单元列表 */
-  .unit-list{grid-template-columns:repeat(2,1fr);gap:var(--space-md)}
-  .unit-item{padding:var(--space-lg)}
+  /* 大屏册别选择 - 充分利用宽度 */
+  .term-grid{grid-template-columns:repeat(2,1fr);gap:32px;max-width:100%}
+  .term-card{padding:60px 40px}
+  .term-card .term-icon{font-size:72px}
+  .term-card .term-name{font-size:24px}
+  .term-card .term-desc{font-size:14px}
+  
+  /* 大屏科目选择 - 充分利用宽度 */
+  .subject-grid{grid-template-columns:repeat(3,1fr);gap:32px;max-width:100%}
+  .subject-card{padding:48px 32px}
+  .subject-card .sub-icon{font-size:64px}
+  .subject-card .sub-name{font-size:20px}
+  .subject-card .sub-count{font-size:14px}
+  
+  /* 大屏单元列表 - 双列更舒展 */
+  .unit-list{grid-template-columns:repeat(2,1fr);gap:16px}
+  .unit-item{padding:20px 24px}
+  .unit-item .unit-num{width:52px;height:52px;font-size:18px}
+  .unit-item .unit-name{font-size:16px}
+  .unit-item .unit-desc{font-size:13px}
   
   /* 大屏考试入口 */
-  .action-row{grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin:var(--space-lg) 0}
-  .action-btn{padding:var(--space-lg) var(--space-md)}
-  .action-btn .act-icon{font-size:36px}
-  .action-btn .act-name{font-size:var(--font-size-sm)}
+  .action-row{grid-template-columns:repeat(4,1fr);gap:20px;margin:24px 0}
+  .action-btn{padding:28px 20px}
+  .action-btn .act-icon{font-size:40px}
+  .action-btn .act-name{font-size:15px}
+  .action-btn .act-desc{font-size:12px}
   
   /* 大屏学习路径 */
-  .path-step{padding:var(--space-lg);gap:var(--space-lg)}
+  .path-step{padding:20px 24px;gap:20px}
+  .path-step .step-icon{width:56px;height:56px;font-size:28px}
+  .path-step .step-title{font-size:16px}
+  .path-step .step-desc{font-size:13px}
   
   /* 大屏知识点 */
-  .knowledge-section{padding:var(--space-lg);margin-bottom:var(--space-md)}
-  .knowledge-tabs{gap:var(--space-md)}
-  .knowledge-tab{padding:10px 20px;font-size:var(--font-size-base)}
+  .knowledge-section{padding:28px;margin-bottom:20px}
+  .knowledge-section h3{font-size:18px}
+  .knowledge-section .content{font-size:15px;line-height:2}
+  .knowledge-tabs{gap:12px;margin-bottom:24px}
+  .knowledge-tab{padding:12px 24px;font-size:15px}
   
   /* 大屏互动演示 */
-  .demo-box{padding:var(--space-xl)}
-  .demo-box .demo-formula{font-size:var(--font-size-3xl)}
+  .demo-box{padding:40px}
+  .demo-box .demo-title{font-size:18px}
+  .demo-box .demo-formula{font-size:48px}
+  .demo-box .demo-label{font-size:15px}
+  .demo-box .demo-value{font-size:24px}
+  .demo-box .demo-explain{padding:20px;font-size:14px}
   
   /* 大屏练习/考试 */
-  .question-card{padding:var(--space-xl);min-height:350px}
-  .question-card .q-text{font-size:var(--font-size-lg)}
-  .option-item{padding:var(--space-lg);font-size:var(--font-size-base)}
-  .fill-input{padding:var(--space-lg);font-size:var(--font-size-lg)}
+  .exam-header{padding:20px 24px;margin-bottom:20px}
+  .exam-header .progress{font-size:15px}
+  .exam-header .timer{font-size:15px}
+  .question-card{padding:32px 36px;min-height:400px}
+  .question-card .q-text{font-size:18px;line-height:2}
+  .question-card .q-image{font-size:72px;padding:24px}
+  .option-item{padding:18px 24px;font-size:16px}
+  .fill-input{padding:18px 24px;font-size:18px}
+  
+  /* 大屏苏格拉底引导 */
+  .socrates-box{padding:20px 24px}
+  .socrates-box .s-title{font-size:15px}
+  .socrates-box .s-question{font-size:15px;line-height:1.8}
+  
+  /* 大屏答案解析 */
+  .explain-box{padding:20px 24px}
+  .explain-box .e-title{font-size:15px}
+  .explain-box .e-content{font-size:14px;line-height:1.8}
   
   /* 大屏按钮 */
-  .btn{padding:16px;font-size:var(--font-size-lg)}
-  .btn-group{gap:var(--space-lg)}
+  .btn{padding:18px;font-size:17px}
+  .btn-group{gap:20px;margin-top:24px}
   
   /* 大屏结果页 */
-  .result-card{padding:var(--space-2xl)}
-  .result-card .score{font-size:64px}
-  .result-stats{grid-template-columns:repeat(3,1fr);gap:var(--space-lg)}
+  .result-card{padding:48px 40px;margin-top:32px}
+  .result-card .score{font-size:72px}
+  .result-card .score-label{font-size:16px}
+  .result-card .level{padding:10px 28px;font-size:16px}
+  .result-stats{grid-template-columns:repeat(3,1fr);gap:24px;margin-top:32px}
+  .result-stat{padding:24px}
+  .result-stat .num{font-size:32px}
+  .result-stat .label{font-size:13px}
+  
+  /* 大屏错题本 */
+  .wrong-question-card{padding:20px 24px}
+  .wrong-question-card .wq-text{font-size:15px}
   
   /* 大屏家长端 */
-  .parent-header{padding:var(--space-xl)}
-  .parent-stats{grid-template-columns:repeat(4,1fr);gap:var(--space-md)}
-  .p-stat{padding:var(--space-lg)}
-  .p-stat .p-num{font-size:var(--font-size-2xl)}
-  .chart-box{padding:var(--space-lg)}
-  .chart-box .chart-content{height:250px}
-  .ai-suggestion{padding:var(--space-lg)}
+  .parent-header{padding:32px 40px;margin-bottom:32px}
+  .parent-header .ph-title{font-size:24px}
+  .parent-header .ph-sub{font-size:14px}
+  .parent-stats{grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:32px}
+  .p-stat{padding:24px 20px}
+  .p-stat .p-num{font-size:32px}
+  .p-stat .p-label{font-size:13px}
+  .chart-box{padding:28px;margin-bottom:32px}
+  .chart-box .chart-title{font-size:17px}
+  .chart-box .chart-content{height:280px}
+  .ai-suggestion{padding:24px 28px;margin-bottom:32px}
+  .ai-suggestion .ai-title{font-size:17px}
+  .ai-suggestion .ai-content{font-size:14px;line-height:2}
   
-  /* 大屏底部导航 */
+  /* 大屏薄弱知识点 */
+  .weak-item{padding:14px 0}
+  .weak-item .weak-name{font-size:15px}
+  
+  /* 大屏底部导航 - 固定在底部，全宽 */
   .tab-bar{
-    position: sticky;
+    position: fixed;
     bottom: 0;
+    left: 0;
     max-width: 100%;
+    width: 100%;
     transform: none;
     border-radius: 0;
     padding: 12px 0 16px;
+    z-index: 1000;
   }
-  .tab-item{padding:8px 16px;font-size:var(--font-size-sm)}
+  .tab-item{padding:10px 20px;font-size:14px}
   .tab-item .tab-icon{font-size:28px}
+  
+  /* 大屏面包屑 */
+  .breadcrumb{font-size:13px;margin-bottom:20px}
+  
+  /* 大屏章节标题 */
+  .section-title{font-size:17px;margin-bottom:20px}
+  .section-title .icon{font-size:22px}
 }
 
 /* --- 小屏手机（360px以下） --- */
