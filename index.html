@@ -1347,6 +1347,124 @@ a{text-decoration:none;color:inherit}
 .mb-md{margin-bottom:var(--space-md)}
 .mb-lg{margin-bottom:var(--space-lg)}
 
+
+/* --- 弹窗样式 --- */
+.modal-overlay{
+  position: fixed;
+  top: 0;left: 0;right: 0;bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-box{
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.modal-title{
+  font-size: 18px;
+  font-weight: 700;
+  color: #2C3E50;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.modal-section{
+  margin-bottom: 16px;
+}
+.modal-section-title{
+  font-size: 13px;
+  font-weight: 600;
+  color: #5F6C7B;
+  margin-bottom: 8px;
+}
+.modal-options{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.modal-option{
+  padding: 10px 8px;
+  border: 2px solid #E8ECF1;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5F6C7B;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fff;
+}
+.modal-option:hover{
+  border-color: #4F7DF9;
+  color: #4F7DF9;
+}
+.modal-option.active{
+  background: #4F7DF9;
+  border-color: #4F7DF9;
+  color: #fff;
+}
+.modal-option.locked{
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.modal-btns{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+.modal-btn{
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+.modal-btn.cancel{
+  background: #F5F7FA;
+  color: #5F6C7B;
+}
+.modal-btn.confirm{
+  background: linear-gradient(135deg, #4F7DF9, #3B5FE0);
+  color: #fff;
+}
+.modal-btn.confirm:disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 筛选栏样式 */
+.filter-bar{
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter-select{
+  padding: 8px 12px;
+  border: 2px solid #E8ECF1;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2C3E50;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.filter-select:focus{
+  border-color: #4F7DF9;
+}
 </style>
 </head>
 <body>
@@ -1359,6 +1477,7 @@ a{text-decoration:none;color:inherit}
 // ============================================
 const STATE = {
   currentPage: 'grade', // grade, term, subject, unit, study, practice, exam, result, parent, english, phonics-level, ipa-detail
+  lastStudy: null, // 上次学习位置
   selectedGrade: null,
   selectedTerm: null,
   selectedSubject: null,
@@ -6541,6 +6660,15 @@ function generateSocrates(question){
 // ============================================
 const app=document.getElementById('app');
 
+
+// 初始化：读取上次学习位置
+try{
+  var savedStudy = localStorage.getItem('lastStudy');
+  if(savedStudy){
+    STATE.lastStudy = JSON.parse(savedStudy);
+  }
+}catch(e){}
+
 function render(){
   let html='';
   switch(STATE.currentPage){
@@ -6548,7 +6676,7 @@ function render(){
     case 'term': html=renderTermPage(); break;
     case 'subject': html=renderSubjectPage(); break;
     case 'unit': html=renderUnitPage(); break;
-    case 'study': html=renderStudyPage(); break;
+    case 'study': saveLastStudy(); html=renderStudyPage(); break;
     case 'practice': html=renderPracticePage(); break;
     case 'exam': html=renderExamPage(); break;
     case 'examResult': html=renderExamResult(); break;
@@ -6571,15 +6699,23 @@ function renderHeader(title,sub='',showBack=false){
   </div>`;
 }
 
+
+// 选择年级
+function selectGrade(g){
+  STATE.selectedGrade = String(g);
+  navigate('term');
+}
+
 function renderGradePage(){
   let cards='';
   for(let g=1;g<=6;g++){
-    const locked=false;
-    cards+=`<div class="grade-card ${locked?'locked':''}" data-grade="${g}">
-      <div class="grade-num">${g}</div>
-      <div class="grade-name">年级</div>
-      ${locked?'<div class="lock-icon">🔒</div><div style="font-size:10px;color:#ccc;margin-top:2px">即将上线</div>':''}
-    </div>`;
+    const locked = g < 5;
+    const isStudying = g === 6;
+    const isReview = g === 5;
+    let statusBadge = '';
+    if(isStudying) statusBadge = '<div class="grade-status studying">🔥 在学</div>';
+    else if(isReview) statusBadge = '<div class="grade-status review">📝 复习</div>';
+    cards+='<div class="grade-card '+(locked?'locked':'')+'" data-grade="'+g+'" onclick="'+(locked?'alert(\'🔒 '+g+'年级内容即将上线，敬请期待！\')':'selectGrade('+g+')')+'">'+statusBadge+'<div class="grade-num">'+g+'</div><div class="grade-name">年级</div>'+(locked?'<div class="lock-icon">🔒</div><div style="font-size:10px;color:#ccc;margin-top:2px">即将上线</div>':'')+'</div>';
   }
   // 仪表盘首页 - 今日任务
   var tasksHtml = '<div class="task-item"><div class="task-checkbox done">✓</div><div class="task-info"><div class="task-name">错题复习</div><div class="task-meta">5题 · 艾宾浩斯</div></div><div class="task-progress"><div class="fill" style="width:100%"></div></div></div>';
@@ -6593,10 +6729,18 @@ function renderGradePage(){
   statsHtml += '<div class="stat-card"><div class="stat-num">2/8</div><div class="stat-label">完成单元</div><div class="stat-trend up">+1</div></div>';
   
   // 快捷入口
-  var quickHtml = '<div class="quick-action" onclick="STATE.selectedGrade=\'6\';STATE.selectedTerm=\'up\';STATE.selectedSubject=\'math\';STATE.selectedUnit=\'m1\';navigate(\'study\')"><div class="qa-icon">▶️</div><div class="qa-name">继续学习</div><div class="qa-desc">小数乘法</div></div>';
+  var continueDesc = '点击开始';
+  var continueAction = "navigate('grade')";
+  if(STATE.lastStudy && STATE.lastStudy.grade){
+    var subjectName = STATE.lastStudy.subject === 'chinese' ? '语文' : STATE.lastStudy.subject === 'math' ? '数学' : '英语';
+    var termName = STATE.lastStudy.term === 'up' ? '上' : '下';
+    continueDesc = STATE.lastStudy.grade + '年级' + termName + '册·' + subjectName;
+    continueAction = "STATE.selectedGrade='" + STATE.lastStudy.grade + "';STATE.selectedTerm='" + STATE.lastStudy.term + "';STATE.selectedSubject='" + STATE.lastStudy.subject + "';STATE.selectedUnit='" + STATE.lastStudy.unit + "';navigate('study')";
+  }
+  var quickHtml = '<div class="quick-action" onclick="' + continueAction + '"><div class="qa-icon">▶️</div><div class="qa-name">继续学习</div><div class="qa-desc">' + continueDesc + '</div></div>';
   quickHtml += '<div class="quick-action" onclick="navigate(\'wrongbook\')"><div class="qa-icon">❌</div><div class="qa-name">错题复习</div><div class="qa-desc">12题待复习</div></div>';
   quickHtml += '<div class="quick-action" onclick="alert(\'薄弱点专项训练功能开发中\')"><div class="qa-icon">🎯</div><div class="qa-name">薄弱突破</div><div class="qa-desc">分数运算</div></div>';
-  quickHtml += '<div class="quick-action" onclick="STATE.selectedGrade=\'6\';STATE.selectedTerm=\'up\';STATE.selectedSubject=\'math\';navigate(\'unit\')"><div class="qa-icon">📝</div><div class="qa-name">模拟考试</div><div class="qa-desc">开始测评</div></div>';
+  quickHtml += '<div class="quick-action" onclick="showExamModal()"><div class="qa-icon">📝</div><div class="qa-name">模拟考试</div><div class="qa-desc">选择年级科目</div></div>';
   
   return '<div class="page" style="padding-top:0">'+
     '<div class="dashboard-welcome"><div class="welcome-title">👋 你好，'+STATE.userData.name+'！</div><div class="welcome-sub">今天是学习的好日子，继续加油哦！</div><div class="streak-badge">🔥 连续打卡 '+STATE.userData.streak+' 天</div></div>'+
@@ -6607,24 +6751,62 @@ function renderGradePage(){
   '</div>'+renderTabBar('grade');
 }
 
-function renderTermPage(){
-  const grade=STATE.selectedGrade;
-  return renderHeader(`${grade}年级`, '选择册别', true)+
-    `<div class="page">
-      <div class="breadcrumb"><span onclick="navigate('grade')">首页</span><span class="sep">›</span><span>${grade}年级</span></div>
-      <div class="term-grid">
-        <div class="term-card" data-term="up">
-          <div class="term-icon">🍂</div>
-          <div class="term-name">上册</div>
-          <div class="term-desc">秋季学期</div>
-        </div>
-        <div class="term-card" data-term="down">
-          <div class="term-icon">🌸</div>
-          <div class="term-name">下册</div>
-          <div class="term-desc">春季学期</div>
-        </div>
-      </div>
-    </div>`+renderTabBar('grade');
+// 练习筛选弹窗
+function showPracticeFilterModal(){
+  if(!STATE.practiceFilter) STATE.practiceFilter = {type: 'all', diff: 'mixed'};
+  
+  var types = [
+    {id: 'all', name: '全部题型'},
+    {id: 'choice', name: '选择题'},
+    {id: 'fill', name: '填空题'},
+    {id: 'calc', name: '计算题'},
+    {id: 'app', name: '应用题'}
+  ];
+  var diffs = [
+    {id: 'mixed', name: '混合难度'},
+    {id: 'basic', name: '基础题'},
+    {id: 'medium', name: '中等题'},
+    {id: 'hard', name: '拔高题'}
+  ];
+  
+  var typeHtml = types.map(function(t){
+    return '<div class="modal-option ' + (STATE.practiceFilter.type === t.id ? 'active' : '') + '" onclick="STATE.practiceFilter.type=\'' + t.id + '\';showPracticeFilterModal()">' + t.name + '</div>';
+  }).join('');
+  
+  var diffHtml = diffs.map(function(d){
+    return '<div class="modal-option ' + (STATE.practiceFilter.diff === d.id ? 'active' : '') + '" onclick="STATE.practiceFilter.diff=\'' + d.id + '\';showPracticeFilterModal()">' + d.name + '</div>';
+  }).join('');
+  
+  var modalHtml = '<div class="modal-overlay" onclick="if(event.target===this)closePracticeFilterModal()">' +
+    '<div class="modal-box">' +
+      '<div class="modal-title">📝 练习设置</div>' +
+      '<div class="modal-section"><div class="modal-section-title">选择题型</div><div class="modal-options" style="grid-template-columns:repeat(3,1fr)">' + typeHtml + '</div></div>' +
+      '<div class="modal-section"><div class="modal-section-title">选择难度</div><div class="modal-options" style="grid-template-columns:repeat(2,1fr)">' + diffHtml + '</div></div>' +
+      '<div class="modal-btns">' +
+        '<button class="modal-btn cancel" onclick="closePracticeFilterModal()">取消</button>' +
+        '<button class="modal-btn confirm" onclick="confirmPracticeFilter()">开始练习</button>' +
+      '</div>' +
+    '</div></div>';
+  
+  var old = document.getElementById('practiceFilterModal');
+  if(old) old.remove();
+  
+  var div = document.createElement('div');
+  div.id = 'practiceFilterModal';
+  div.innerHTML = modalHtml;
+  document.body.appendChild(div);
+}
+
+function closePracticeFilterModal(){
+  var modal = document.getElementById('practiceFilterModal');
+  if(modal) modal.remove();
+  STATE.practiceFilter = null;
+}
+
+function confirmPracticeFilter(){
+  closePracticeFilterModal();
+  // 保存筛选条件，然后真正开始练习
+  startPracticeRealFunc();
 }
 
 function renderSubjectPage(){
@@ -6718,10 +6900,10 @@ function renderUnitPage(){
       <!-- 考试模块 -->
       <div style="font-size:14px;font-weight:600;color:#333;margin:20px 0 10px">📋 考试中心</div>
       <div class="action-row">
-        <div class="action-btn" onclick="startExamWithCheck(\'unit\')">
+        <div class="action-btn" onclick="showUnitExamModal()">
           <div class="act-icon">📝</div>
           <div class="act-name">单元考试</div>
-          <div style="font-size:10px;color:#999;margin-top:4px">测当前单元</div>
+          <div style="font-size:10px;color:#999;margin-top:4px">选择单元</div>
         </div>
         <div class="action-btn" onclick="startExamWithCheck('month')">
           <div class="act-icon">📊</div>
@@ -6746,6 +6928,45 @@ function renderUnitPage(){
 }
 
 // 带解锁检查的考试入口
+
+// 单元考试选择弹窗
+function showUnitExamModal(){
+  var curriculum = CURRICULUM[STATE.selectedGrade][STATE.selectedTerm][STATE.selectedSubject];
+  var units = curriculum.units;
+  
+  var unitHtml = units.map(function(u, i){
+    return '<div class="modal-option" style="grid-column:span 3" onclick="selectUnitExam(\'' + u.id + '\')">' + (i+1) + '. ' + u.name + '</div>';
+  }).join('');
+  
+  var modalHtml = '<div class="modal-overlay" onclick="if(event.target===this)closeUnitExamModal()">' +
+    '<div class="modal-box">' +
+      '<div class="modal-title">📝 选择考试单元</div>' +
+      '<div class="modal-options" style="grid-template-columns:1fr">' + unitHtml + '</div>' +
+      '<div class="modal-btns" style="grid-template-columns:1fr">' +
+        '<button class="modal-btn cancel" onclick="closeUnitExamModal()">取消</button>' +
+      '</div>' +
+    '</div></div>';
+  
+  var old = document.getElementById('unitExamModal');
+  if(old) old.remove();
+  
+  var div = document.createElement('div');
+  div.id = 'unitExamModal';
+  div.innerHTML = modalHtml;
+  document.body.appendChild(div);
+}
+
+function selectUnitExam(unitId){
+  STATE.selectedUnit = unitId;
+  closeUnitExamModal();
+  startExamWithCheck('unit');
+}
+
+function closeUnitExamModal(){
+  var modal = document.getElementById('unitExamModal');
+  if(modal) modal.remove();
+}
+
 function startExamWithCheck(type){
   if (!STATE.selectedUnit && type === 'unit') {
     alert('请先选择一个单元！');
@@ -7105,9 +7326,7 @@ function renderSocrates(es){
   </div>`;
 }
 
-function renderExamPage(){
-  return renderPracticePage();
-}
+
 
 function renderResultPage(){
   const es=STATE.examState;
@@ -7161,6 +7380,11 @@ function renderResultPage(){
 }
 
 function renderParentPage(){
+  // 时间范围筛选
+  if(!STATE.parentTimeRange) STATE.parentTimeRange = '7days';
+  var timeRange = STATE.parentTimeRange;
+  var timeLabel = timeRange === '7days' ? '近7天' : timeRange === '30days' ? '近30天' : '本学期';
+
   const userData = STATE.userData;
   
   // 基于真实数据计算统计
@@ -7293,22 +7517,46 @@ function renderWrongBookPage(){
     </div>
   `;
   
+  // 筛选状态
+  if(!STATE.wrongbookFilter) STATE.wrongbookFilter = {subject: 'all'};
+  var filter = STATE.wrongbookFilter;
+  
+  // 按科目筛选
+  var filterQuestions = function(arr){
+    if(filter.subject === 'all') return arr;
+    return arr.filter(function(q){ return q.subject === filter.subject; });
+  };
+  
+  var filteredToday = filterQuestions(todayReview);
+  var filteredPending = filterQuestions(pending);
+  var filteredMastered = filterQuestions(mastered);
+  
   return renderHeader('错题本', '智能复习 · 间隔重复 · 艾宾浩斯曲线', true)+
     `<div class="page">
       <div class="breadcrumb"><span onclick="navigate('grade')">首页</span><span class="sep">›</span><span>错题本</span></div>
       
+      <!-- 筛选栏 -->
+      <div class="filter-bar">
+        <select class="filter-select" onchange="STATE.wrongbookFilter.subject=this.value;render()">
+          <option value="all">全部科目</option>
+          <option value="chinese" ${filter.subject==='chinese'?'selected':''}>语文</option>
+          <option value="math" ${filter.subject==='math'?'selected':''}>数学</option>
+          <option value="english" ${filter.subject==='english'?'selected':''}>英语</option>
+        </select>
+      </div>
+      
       <!-- 统计卡片 -->
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
         <div style="background:#fff3e0;padding:16px;border-radius:12px;text-align:center">
-          <div style="font-size:28px;font-weight:700;color:#f57c00">${todayReview.length}</div>
+          <div style="font-size:28px;font-weight:700;color:#f57c00">${filteredToday.length}</div>
           <div style="font-size:12px;color:#666;margin-top:4px">今日待复习</div>
         </div>
         <div style="background:#e3f2fd;padding:16px;border-radius:12px;text-align:center">
-          <div style="font-size:28px;font-weight:700;color:#1976d2">${pending.length}</div>
+          <div style="font-size:28px;font-weight:700;color:#1976d2">${filteredPending.length}</div>
           <div style="font-size:12px;color:#666;margin-top:4px">待复习</div>
         </div>
         <div style="background:#c8e6c9;padding:16px;border-radius:12px;text-align:center">
-          <div style="font-size:28px;font-weight:700;color:#388e3c">${mastered.length}</div>
+          <div style="font-size:28px;font-weight:700;color:#388e3c">${filteredMastered.length}</div>
           <div style="font-size:12px;color:#666;margin-top:4px">已掌握</div>
         </div>
       </div>
@@ -7323,26 +7571,26 @@ function renderWrongBookPage(){
       
       <!-- 今日待复习 -->
       ${todayReview.length > 0 ? `
-        <div style="font-size:14px;font-weight:600;color:#333;margin:15px 0 10px">📅 今日待复习（${todayReview.length}题）</div>
+        <div style="font-size:14px;font-weight:600;color:#333;margin:15px 0 10px">📅 今日待复习（${filteredToday.length}题）</div>
         <div style="display:flex;flex-direction:column;gap:12px">
-          ${todayReview.map(q => renderQuestionCard(q, true)).join('')}
+          ${filteredToday.map(q => renderQuestionCard(q, true)).join('')}
         </div>
       ` : ''}
       
       <!-- 待复习 -->
       ${pending.length > 0 ? `
-        <div style="font-size:14px;font-weight:600;color:#333;margin:20px 0 10px">⏳ 待复习（${pending.length}题）</div>
+        <div style="font-size:14px;font-weight:600;color:#333;margin:20px 0 10px">⏳ 待复习（${filteredPending.length}题）</div>
         <div style="display:flex;flex-direction:column;gap:12px">
-          ${pending.slice(0, 10).map(q => renderQuestionCard(q, false)).join('')}
+          ${filteredPending.slice(0, 10).map(q => renderQuestionCard(q, false)).join('')}
         </div>
         ${pending.length > 10 ? `<div style="text-align:center;color:#999;font-size:12px;margin-top:10px">还有${pending.length - 10}道，到复习时间会自动显示</div>` : ''}
       ` : ''}
       
       <!-- 已掌握 -->
       ${mastered.length > 0 ? `
-        <div style="font-size:14px;font-weight:600;color:#333;margin:20px 0 10px">✅ 已掌握（${mastered.length}题）</div>
+        <div style="font-size:14px;font-weight:600;color:#333;margin:20px 0 10px">✅ 已掌握（${filteredMastered.length}题）</div>
         <div style="display:flex;flex-direction:column;gap:12px">
-          ${mastered.slice(0, 5).map(q => renderQuestionCard(q, false)).join('')}
+          ${filteredMastered.slice(0, 5).map(q => renderQuestionCard(q, false)).join('')}
         </div>
         ${mastered.length > 5 ? `<div style="text-align:center;color:#999;font-size:12px;margin-top:10px">还有${mastered.length - 5}道已掌握的题目</div>` : ''}
       ` : ''}
@@ -7633,6 +7881,105 @@ function renderPEPList(){
   `).join('');
 }
 
+
+// 模拟考试选择弹窗
+var examModalState = {grade: null, term: null, subject: null, examType: 'unit'};
+
+function showExamModal(){
+  examModalState = {grade: null, term: null, subject: null, examType: 'unit'};
+  renderExamModal();
+}
+
+function renderExamModal(){
+  var grades = [1,2,3,4,5,6];
+  var gradeHtml = grades.map(function(g){
+    var locked = g < 5;
+    return '<div class="modal-option ' + (examModalState.grade === g ? 'active' : '') + (locked ? ' locked' : '') + '" onclick="' + (locked ? '' : 'selectExamGrade(' + g + ')') + '">' + g + '年级' + (locked ? ' 🔒' : '') + '</div>';
+  }).join('');
+  
+  var termHtml = '';
+  if(examModalState.grade){
+    termHtml = '<div class="modal-section"><div class="modal-section-title">选择册别</div><div class="modal-options">' +
+      '<div class="modal-option ' + (examModalState.term === 'up' ? 'active' : '') + '" onclick="selectExamTerm(\'up\')">上册</div>' +
+      '<div class="modal-option ' + (examModalState.term === 'down' ? 'active' : '') + '" onclick="selectExamTerm(\'down\')">下册</div>' +
+    '</div></div>';
+  }
+  
+  var subjectHtml = '';
+  if(examModalState.grade && examModalState.term){
+    subjectHtml = '<div class="modal-section"><div class="modal-section-title">选择科目</div><div class="modal-options">' +
+      '<div class="modal-option ' + (examModalState.subject === 'chinese' ? 'active' : '') + '" onclick="selectExamSubject(\'chinese\')">📖 语文</div>' +
+      '<div class="modal-option ' + (examModalState.subject === 'math' ? 'active' : '') + '" onclick="selectExamSubject(\'math\')">🔢 数学</div>' +
+      '<div class="modal-option ' + (examModalState.subject === 'english' ? 'active' : '') + '" onclick="selectExamSubject(\'english\')">🔤 英语</div>' +
+    '</div></div>';
+  }
+  
+  var typeHtml = '';
+  if(examModalState.grade && examModalState.term && examModalState.subject){
+    typeHtml = '<div class="modal-section"><div class="modal-section-title">选择考试类型</div><div class="modal-options" style="grid-template-columns:repeat(2,1fr)">' +
+      '<div class="modal-option ' + (examModalState.examType === 'unit' ? 'active' : '') + '" onclick="selectExamType(\'unit\')">单元考试</div>' +
+      '<div class="modal-option ' + (examModalState.examType === 'month' ? 'active' : '') + '" onclick="selectExamType(\'month\')">月考试</div>' +
+      '<div class="modal-option ' + (examModalState.examType === 'mid' ? 'active' : '') + '" onclick="selectExamType(\'mid\')">期中考试</div>' +
+      '<div class="modal-option ' + (examModalState.examType === 'final' ? 'active' : '') + '" onclick="selectExamType(\'final\')">期末考试</div>' +
+    '</div></div>';
+  }
+  
+  var canConfirm = examModalState.grade && examModalState.term && examModalState.subject && examModalState.examType;
+  
+  var modalHtml = '<div class="modal-overlay" onclick="if(event.target===this)closeExamModal()">' +
+    '<div class="modal-box">' +
+      '<div class="modal-title">📝 选择模拟考试</div>' +
+      '<div class="modal-section"><div class="modal-section-title">选择年级（5-6年级已开放）</div><div class="modal-options">' + gradeHtml + '</div></div>' +
+      termHtml + subjectHtml + typeHtml +
+      '<div class="modal-btns">' +
+        '<button class="modal-btn cancel" onclick="closeExamModal()">取消</button>' +
+        '<button class="modal-btn confirm" ' + (canConfirm ? '' : 'disabled') + ' onclick="confirmExam()">开始考试</button>' +
+      '</div>' +
+    '</div></div>';
+  
+  // 移除已存在的弹窗
+  var old = document.getElementById('examModal');
+  if(old) old.remove();
+  
+  var div = document.createElement('div');
+  div.id = 'examModal';
+  div.innerHTML = modalHtml;
+  document.body.appendChild(div);
+}
+
+function selectExamGrade(g){
+  examModalState.grade = g;
+  examModalState.term = null;
+  examModalState.subject = null;
+  renderExamModal();
+}
+function selectExamTerm(t){
+  examModalState.term = t;
+  examModalState.subject = null;
+  renderExamModal();
+}
+function selectExamSubject(s){
+  examModalState.subject = s;
+  renderExamModal();
+}
+function selectExamType(t){
+  examModalState.examType = t;
+  renderExamModal();
+}
+function closeExamModal(){
+  var modal = document.getElementById('examModal');
+  if(modal) modal.remove();
+}
+function confirmExam(){
+  STATE.selectedGrade = String(examModalState.grade);
+  STATE.selectedTerm = examModalState.term;
+  STATE.selectedSubject = examModalState.subject;
+  STATE.examType = examModalState.examType;
+  closeExamModal();
+  // 直接开始考试
+  startExam(examModalState.examType);
+}
+
 function renderTabBar(active){
   return `<div class="tab-bar">
     <div class="tab-item ${active==='grade'?'active':''}" onclick="navigate('grade')">
@@ -7817,23 +8164,103 @@ function nextQuestion(){
   }
 }
 
-function submitExam(){
-  const es=STATE.examState;
-  let totalScore=0,correctCount=0;
-  es.questions.forEach((q,i)=>{
-    if(es.correct[i]){
-      correctCount++;
-      totalScore+=q.score||3;
-    }
-  });
-  es.score=Math.min(100,Math.round(totalScore));
-  es.correctCount=correctCount;
-  es.submitted=true;
-  STATE.userData.totalQuestions+=es.questions.length;
-  navigate('result');
-}
+
 
 function startPractice(){
+  // 如果还没选择题型/难度，弹出选择
+  if(!STATE.practiceFilter){
+    showPracticeFilterModal();
+    return;
+  }
+  // 已经选择了筛选条件，直接开始练习（调用真正的练习开始函数）
+  startPracticeRealFunc();
+}
+// 真正的开始练习函数
+function startPracticeRealFunc(){
+  const grade=STATE.selectedGrade;
+  const term=STATE.selectedTerm;
+  const subject=STATE.selectedSubject;
+  const unitId=STATE.selectedUnit;
+  
+  // 自适应难度：根据历史正确率调整题目难度比例
+  const p = getUnitProgress(grade, term, subject, unitId);
+  const historyAccuracy = p.practiceTotal > 0 ? p.practiceCorrect / p.practiceTotal : 0.5;
+  
+  // 计算难度比例
+  let basicRatio, mediumRatio, hardRatio;
+  if (historyAccuracy >= 0.8) {
+    basicRatio = 0.4; mediumRatio = 0.4; hardRatio = 0.2;
+  } else if (historyAccuracy >= 0.6) {
+    basicRatio = 0.5; mediumRatio = 0.35; hardRatio = 0.15;
+  } else {
+    basicRatio = 0.7; mediumRatio = 0.25; hardRatio = 0.05;
+  }
+  
+  // 生成题目
+  let questions=[];
+  if(subject==='math'){
+    questions=generateMathQuestions(grade,term,unitId,30);
+  }else{
+    questions=generateChineseQuestions(grade,term,unitId,30);
+  }
+  
+  // 按自适应难度比例重新分配难度
+  const basicCount = Math.round(30 * basicRatio);
+  const mediumCount = Math.round(30 * mediumRatio);
+  const hardCount = 30 - basicCount - mediumCount;
+  
+  // 打乱题目顺序后分配难度
+  questions = questions.sort(() => Math.random() - 0.5);
+  for (let i = 0; i < questions.length; i++) {
+    if (i < basicCount) questions[i].diff = 'basic';
+    else if (i < basicCount + mediumCount) questions[i].diff = 'medium';
+    else questions[i].diff = 'hard';
+  }
+  
+  // 分配分数 - 动态计算确保总分100分
+  const typeWeights = {choice: 1, fill: 1.5, calc: 2, app: 3};
+  let totalWeight = 0;
+  questions.forEach(q => { totalWeight += typeWeights[q.type] || 1; });
+  questions=questions.map(q=>{
+    const weight = typeWeights[q.type] || 1;
+    const score = Math.round((weight / totalWeight) * 100 * 10) / 10;
+    return {...q,score};
+  });
+  // 调整最后一题分数确保总分正好100
+  let sumScore = questions.reduce((sum,q)=>sum+q.score,0);
+  if(questions.length > 0){
+    questions[questions.length-1].score += Math.round((100 - sumScore) * 10) / 10;
+  }
+  
+  STATE.examState={
+    type: 'practice',
+    title: '单元练习',
+    questions,
+    current:0,
+    answers:new Array(questions.length).fill(null),
+    correct:new Array(questions.length).fill(false),
+    socratesActive:false,
+    socratesSteps:[],
+    socratesCurrent:0,
+    showHint:false,
+    showExplain:false,
+    submitted:false,
+    timeUsed:0,
+    startTime: Date.now(),
+    adaptiveInfo: {
+      historyAccuracy: Math.round(historyAccuracy * 100),
+      basicRatio: Math.round(basicRatio * 100),
+      mediumRatio: Math.round(mediumRatio * 100),
+      hardRatio: Math.round(hardRatio * 100)
+    }
+  };
+  navigate('practice');
+}
+
+
+
+// 真正的开始练习函数（原startPractice的逻辑）
+function startPracticeReal(){
   const grade=STATE.selectedGrade;
   const term=STATE.selectedTerm;
   const subject=STATE.selectedSubject;
@@ -8188,6 +8615,22 @@ function goExamQuestion(index){
   STATE.examState.current = index;
   window.scrollTo(0,0);
   render();
+}
+
+
+// 保存上次学习位置
+function saveLastStudy(){
+  try{
+    var study = {
+      grade: STATE.selectedGrade,
+      term: STATE.selectedTerm,
+      subject: STATE.selectedSubject,
+      unit: STATE.selectedUnit,
+      time: Date.now()
+    };
+    localStorage.setItem('lastStudy', JSON.stringify(study));
+    STATE.lastStudy = study;
+  }catch(e){}
 }
 
 function navigate(page){
