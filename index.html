@@ -92,7 +92,7 @@ a{text-decoration:none;color:inherit}
   background: var(--bg-page);
   min-height: 100vh;
   position: relative;
-  padding-bottom: 70px;
+  padding-bottom: 90px;
 }
 
 /* --- 顶部导航栏（新设计） --- */
@@ -131,6 +131,44 @@ a{text-decoration:none;color:inherit}
   padding: 0 4px;
 }
 
+/* --- 通用页面头部（renderHeader渲染） --- */
+.header{
+  padding: 20px 16px 16px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+.header .back-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  margin-bottom: 12px;
+  margin-left: 4px;
+}
+.header .back-btn:hover{
+  background: var(--primary);
+  color: #fff;
+}
+.header h1{
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-left: 4px;
+}
+.header .sub{
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
 /* --- 页面头部（带返回按钮） --- */
 .page-header{
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -148,6 +186,7 @@ a{text-decoration:none;color:inherit}
   font-weight: 500;
   transition: var(--transition-fast);
   margin-bottom: var(--space-md);
+  margin-left: 4px;
 }
 .page-header .back-btn:hover{background:rgba(255,255,255,0.3)}
 .page-header h1{font-size:var(--font-size-xl);font-weight:700}
@@ -1090,6 +1129,7 @@ a{text-decoration:none;color:inherit}
     max-height: none;
     overflow-y: visible;
     background: var(--bg-page);
+    padding-bottom: 100px;
   }
   
   /* 大屏顶部导航 */
@@ -1097,9 +1137,16 @@ a{text-decoration:none;color:inherit}
   .top-nav .nav-title{font-size:var(--font-size-xl)}
   
   /* 大屏页面头部 */
-  .page-header{padding:40px}
-  .page-header h1{font-size:var(--font-size-2xl)}
-  .page-header .back-btn{padding:10px 20px;font-size:var(--font-size-base)}
+  .page-header{padding:40px 40px 40px 40px}
+  .page-header h1{font-size:var(--font-size-2xl);margin-left:8px}
+  .page-header .sub{margin-left:8px}
+  .page-header .back-btn{padding:10px 20px;font-size:var(--font-size-base);margin-left:8px}
+  /* 大屏通用页面头部 */
+  .header{padding: 24px 40px 20px}
+  .header .back-btn{padding: 10px 20px;font-size: var(--font-size-base);margin-left: 8px}
+  .header h1{font-size: var(--font-size-2xl);margin-left: 8px}
+  .header .sub{font-size: var(--font-size-base);margin-left: 8px}
+
   
   /* 大屏页面容器 */
   .page{padding:32px 40px;max-width:1600px;margin:0 auto}
