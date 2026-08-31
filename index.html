@@ -6319,6 +6319,894 @@ function splitCalcMulti(q){
 }
 
 // 生成数学题目（按单元和题型）
+/****** 判断题题库（数学/语文 按真实试卷比例加入考试，5题×2分=10分） ******/
+const JUDGE_BANK = {
+ "math": {
+  "1": [
+   {
+    "q": "3+4 与 4+3 的结果相同。",
+    "ans": 0,
+    "explain": "加法交换律：交换加数位置，和不变。"
+   },
+   {
+    "q": "最小的两位数是10。",
+    "ans": 0,
+    "explain": "两位数从10开始，10是最小的两位数。"
+   },
+   {
+    "q": "比5多3的数是8。",
+    "ans": 0,
+    "explain": "5+3=8。"
+   },
+   {
+    "q": "个位是5，十位是1，这个数是51。",
+    "ans": 1,
+    "explain": "十位是1、个位是5，这个数应是15。"
+   },
+   {
+    "q": "1元=10角。",
+    "ans": 0,
+    "explain": "人民币单位换算：1元等于10角。"
+   },
+   {
+    "q": "钟面上分针走一圈是1小时。",
+    "ans": 0,
+    "explain": "分针走一圈正好是60分钟，即1小时。"
+   },
+   {
+    "q": "7-2表示从7里面去掉2，结果是5。",
+    "ans": 0,
+    "explain": "7-2=5。"
+   },
+   {
+    "q": "比10小的数只有1、2、3、4、5、6、7、8、9。",
+    "ans": 1,
+    "explain": "0也比10小，漏掉了0。"
+   },
+   {
+    "q": "一个数加0，还得原数。",
+    "ans": 0,
+    "explain": "任何数加0都等于它本身。"
+   },
+   {
+    "q": "长方形有4条边，对边相等。",
+    "ans": 0,
+    "explain": "长方形对边相等，4个角都是直角。"
+   },
+   {
+    "q": "5个十和6个一是56。",
+    "ans": 0,
+    "explain": "5个十是50，6个一是6，合起来是56。"
+   },
+   {
+    "q": "14读作“一十四”。",
+    "ans": 1,
+    "explain": "14应读作“十四”，读数时“一”通常省略。"
+   },
+   {
+    "q": "3元5角=35角。",
+    "ans": 0,
+    "explain": "3元=30角，30角+5角=35角。"
+   },
+   {
+    "q": "正方体的6个面大小都一样。",
+    "ans": 0,
+    "explain": "正方体6个面都是完全相同的正方形。"
+   },
+   {
+    "q": "最小的自然数是1。",
+    "ans": 1,
+    "explain": "最小的自然数是0。"
+   },
+   {
+    "q": "2个十是20。",
+    "ans": 0,
+    "explain": "2个十就是20。"
+   }
+  ],
+  "2": [
+   {
+    "q": "3×4和4×3用的是同一句乘法口诀。",
+    "ans": 0,
+    "explain": "都用口诀“三四十二”，只是交换了位置。"
+   },
+   {
+    "q": "角的大小与边的长短有关。",
+    "ans": 1,
+    "explain": "角的大小与两边张开的大小有关，与边的长短无关。"
+   },
+   {
+    "q": "1米=100厘米。",
+    "ans": 0,
+    "explain": "长度单位进率：1米等于100厘米。"
+   },
+   {
+    "q": "计算7×8时想口诀“七八五十六”。",
+    "ans": 0,
+    "explain": "7×8=56，对应口诀“七八五十六”。"
+   },
+   {
+    "q": "长方形和正方形都有4个直角。",
+    "ans": 0,
+    "explain": "长方形的4个角都是直角，正方形也如此。"
+   },
+   {
+    "q": "在有余数的除法里，余数一定比除数小。",
+    "ans": 0,
+    "explain": "余数必须小于除数，否则还能继续除。"
+   },
+   {
+    "q": "三角尺上有3个直角。",
+    "ans": 1,
+    "explain": "三角尺上有1个直角和2个锐角。"
+   },
+   {
+    "q": "24÷4=6读作24除以4等于6。",
+    "ans": 0,
+    "explain": "除法算式读法正确。"
+   },
+   {
+    "q": "两个锐角拼在一起一定是钝角。",
+    "ans": 1,
+    "explain": "两个锐角拼起来可能是锐角、直角或钝角，不一定是钝角。"
+   },
+   {
+    "q": "1千克铁比1千克棉花重。",
+    "ans": 1,
+    "explain": "都是1千克，一样重。"
+   },
+   {
+    "q": "最大的两位数是99，最小的三位数是100。",
+    "ans": 0,
+    "explain": "99是最大两位数，100是最小三位数。"
+   },
+   {
+    "q": "6+6+6=6×3。",
+    "ans": 0,
+    "explain": "3个6相加可以写成6×3。"
+   },
+   {
+    "q": "平移后的图形大小和形状都不变。",
+    "ans": 0,
+    "explain": "平移只改变位置，不改变图形的大小和形状。"
+   },
+   {
+    "q": "5050中的两个“5”表示的意义相同。",
+    "ans": 1,
+    "explain": "千位上的5表示5个千，十位上的5表示5个十，意义不同。"
+   },
+   {
+    "q": "千位上的“3”表示3个千。",
+    "ans": 0,
+    "explain": "数位意义：千位上的数字表示几个千。"
+   },
+   {
+    "q": "8÷8=1。",
+    "ans": 0,
+    "explain": "任何数除以它本身（0除外）都得1。"
+   }
+  ],
+  "3": [
+   {
+    "q": "1年有12个月。",
+    "ans": 0,
+    "explain": "一年有12个月。"
+   },
+   {
+    "q": "平年的2月有28天。",
+    "ans": 0,
+    "explain": "平年2月28天，闰年2月29天。"
+   },
+   {
+    "q": "0乘任何数都得0。",
+    "ans": 0,
+    "explain": "0乘任何数都等于0。"
+   },
+   {
+    "q": "1/4和1/5比较，1/4大。",
+    "ans": 0,
+    "explain": "同分子分数，分母小的反而大，1/4大于1/5。"
+   },
+   {
+    "q": "边长是4厘米的正方形，面积是16平方厘米。",
+    "ans": 0,
+    "explain": "4×4=16，面积是16平方厘米。"
+   },
+   {
+    "q": "两位数乘两位数，积可能是三位数也可能是四位数。",
+    "ans": 0,
+    "explain": "如10×10=100是三位数，99×99=9801是四位数。"
+   },
+   {
+    "q": "被除数末尾有0，商的末尾一定有0。",
+    "ans": 1,
+    "explain": "如10÷2=5，被除数末尾有0但商末尾没有0。"
+   },
+   {
+    "q": "面积单位比长度单位大。",
+    "ans": 1,
+    "explain": "面积单位和长度单位是不同类的量，不能比较大小。"
+   },
+   {
+    "q": "闰年一年有366天。",
+    "ans": 0,
+    "explain": "闰年2月有29天，全年366天。"
+   },
+   {
+    "q": "1平方米=100平方分米。",
+    "ans": 0,
+    "explain": "相邻面积单位进率是100。"
+   },
+   {
+    "q": "把一个西瓜平均分成8份，每份是它的1/8。",
+    "ans": 0,
+    "explain": "平均分成8份，每份是它的八分之一。"
+   },
+   {
+    "q": "除数是7，余数最大是6。",
+    "ans": 0,
+    "explain": "余数要比除数小，最大是7-1=6。"
+   },
+   {
+    "q": "三位数除以一位数，商可能是两位数。",
+    "ans": 0,
+    "explain": "如400÷8=50，商是两位数。"
+   },
+   {
+    "q": "分数都比1小。",
+    "ans": 1,
+    "explain": "假分数如5/5=1、6/5>1，并不都比1小。"
+   },
+   {
+    "q": "面向北，左边是西。",
+    "ans": 0,
+    "explain": "面向北时，前北后南，左西右东。"
+   },
+   {
+    "q": "0除以任何数都得0。",
+    "ans": 1,
+    "explain": "0除以任何非0数都得0，但0不能作除数。"
+   }
+  ],
+  "4": [
+   {
+    "q": "0.3和0.30大小相等，计数单位不同。",
+    "ans": 0,
+    "explain": "0.3=0.30，但0.3的计数单位是0.1，0.30的计数单位是0.01。"
+   },
+   {
+    "q": "三角形任意两边之和大于第三边。",
+    "ans": 0,
+    "explain": "这是三角形三边关系的性质。"
+   },
+   {
+    "q": "125×8=1000。",
+    "ans": 0,
+    "explain": "125×8=1000，是常用简便计算。"
+   },
+   {
+    "q": "小数的末尾添上0或去掉0，小数的大小不变。",
+    "ans": 0,
+    "explain": "小数的基本性质。"
+   },
+   {
+    "q": "一个三角形最多有1个直角。",
+    "ans": 0,
+    "explain": "三角形内角和180°，有2个直角就超过180°了。"
+   },
+   {
+    "q": "25×12=25×4×3。",
+    "ans": 0,
+    "explain": "利用乘法结合律，12拆成4×3。"
+   },
+   {
+    "q": "最小的自然数是0。",
+    "ans": 0,
+    "explain": "自然数从0开始。"
+   },
+   {
+    "q": "两条直线不相交就一定平行。",
+    "ans": 1,
+    "explain": "必须强调“在同一平面内”两条不相交的直线才平行。"
+   },
+   {
+    "q": "0.5里面有5个0.1。",
+    "ans": 0,
+    "explain": "0.5就是5个十分之一。"
+   },
+   {
+    "q": "平行四边形是轴对称图形。",
+    "ans": 1,
+    "explain": "一般的平行四边形不是轴对称图形。"
+   },
+   {
+    "q": "亿位上的计数单位是“亿”。",
+    "ans": 0,
+    "explain": "数位与计数单位对应，亿位的计数单位是亿。"
+   },
+   {
+    "q": "计算小数加减法，要把小数点对齐。",
+    "ans": 0,
+    "explain": "小数点对齐才能保证相同数位相加减。"
+   },
+   {
+    "q": "钝角三角形有2个钝角。",
+    "ans": 1,
+    "explain": "三角形最多只有1个钝角。"
+   },
+   {
+    "q": "a×(b+c)=a×b+a×c。",
+    "ans": 0,
+    "explain": "这是乘法分配律。"
+   },
+   {
+    "q": "一个数除以0没有意义。",
+    "ans": 0,
+    "explain": "0不能作除数，除以0无意义。"
+   },
+   {
+    "q": "四边形的内角和是360度。",
+    "ans": 0,
+    "explain": "四边形可分成2个三角形，内角和180°×2=360°。"
+   }
+  ],
+  "5": [
+   {
+    "q": "两个质数的积一定是合数。",
+    "ans": 0,
+    "explain": "两个质数的积至少有这两个质因数，是合数。"
+   },
+   {
+    "q": "一个数的因数个数是有限的。",
+    "ans": 0,
+    "explain": "一个数的因数是有限的，倍数才是无限的。"
+   },
+   {
+    "q": "平行四边形的面积等于底×高。",
+    "ans": 0,
+    "explain": "平行四边形面积公式：底乘高。"
+   },
+   {
+    "q": "2的倍数一定是偶数。",
+    "ans": 0,
+    "explain": "偶数就是2的倍数。"
+   },
+   {
+    "q": "1既不是质数也不是合数。",
+    "ans": 0,
+    "explain": "1只有1个因数，既不是质数也不是合数。"
+   },
+   {
+    "q": "小数乘小数，积的小数位数等于两个因数小数位数之和。",
+    "ans": 0,
+    "explain": "按积的小数位数规则判断。"
+   },
+   {
+    "q": "含有未知数的等式叫方程。",
+    "ans": 0,
+    "explain": "方程是含有未知数的等式。"
+   },
+   {
+    "q": "两个面积相等的三角形一定能拼成一个平行四边形。",
+    "ans": 1,
+    "explain": "只有形状完全相同（全等）的三角形才能拼成平行四边形。"
+   },
+   {
+    "q": "一个数的倍数个数是无限的。",
+    "ans": 0,
+    "explain": "一个数的倍数有无限多个。"
+   },
+   {
+    "q": "抛一枚硬币，正面朝上的可能性是1/2。",
+    "ans": 0,
+    "explain": "硬币只有正反两面，正面朝上概率是二分之一。"
+   },
+   {
+    "q": "三角形的面积是平行四边形面积的一半。",
+    "ans": 1,
+    "explain": "只有在等底等高时，三角形面积才是平行四边形的一半。"
+   },
+   {
+    "q": "0.5和0.50的计数单位相同。",
+    "ans": 1,
+    "explain": "0.5的计数单位是0.1，0.50的计数单位是0.01。"
+   },
+   {
+    "q": "方程一定是等式，等式不一定是方程。",
+    "ans": 0,
+    "explain": "方程是含未知数的等式，等式范围更大。"
+   },
+   {
+    "q": "真分数都比1小。",
+    "ans": 0,
+    "explain": "真分数分子小于分母，一定小于1。"
+   },
+   {
+    "q": "3的倍数一定不是质数。",
+    "ans": 1,
+    "explain": "3本身是质数，也是3的倍数。"
+   },
+   {
+    "q": "循环小数是无限小数。",
+    "ans": 0,
+    "explain": "循环小数的小数位数无限，属于无限小数。"
+   }
+  ],
+  "6": [
+   {
+    "q": "圆的周长是直径的π倍。",
+    "ans": 0,
+    "explain": "周长=π×直径。"
+   },
+   {
+    "q": "比的前项和后项同时乘或除以相同的数（0除外），比值不变。",
+    "ans": 0,
+    "explain": "这是比的基本性质。"
+   },
+   {
+    "q": "所有的直径都相等。",
+    "ans": 1,
+    "explain": "只有在同一个圆或等圆中，直径才相等。"
+   },
+   {
+    "q": "负数都比0小。",
+    "ans": 0,
+    "explain": "负数都小于0。"
+   },
+   {
+    "q": "圆柱的体积是圆锥体积的3倍。",
+    "ans": 1,
+    "explain": "只有在等底等高时，圆柱体积才是圆锥的3倍。"
+   },
+   {
+    "q": "1吨的3/4和3吨的1/4一样重。",
+    "ans": 0,
+    "explain": "1×3/4=3/4吨，3×1/4=3/4吨，一样重。"
+   },
+   {
+    "q": "比的后项不能为0。",
+    "ans": 0,
+    "explain": "比的后项相当于除数，不能为0。"
+   },
+   {
+    "q": "圆的半径扩大到原来的2倍，面积扩大到原来的4倍。",
+    "ans": 0,
+    "explain": "面积与半径的平方成正比，2²=4。"
+   },
+   {
+    "q": "百分数可以表示具体的数量。",
+    "ans": 1,
+    "explain": "百分数只表示倍比关系，不能带单位表示具体数量。"
+   },
+   {
+    "q": "两个圆的周长比等于它们的半径比。",
+    "ans": 0,
+    "explain": "周长=2πr，周长比等于半径比。"
+   },
+   {
+    "q": "圆锥有2条高。",
+    "ans": 1,
+    "explain": "圆锥只有1条高。"
+   },
+   {
+    "q": "一个数的倒数一定比这个数小。",
+    "ans": 1,
+    "explain": "如1/2的倒数是2，比原数大。"
+   },
+   {
+    "q": "扇形统计图能清楚地表示各部分与总数之间的关系。",
+    "ans": 0,
+    "explain": "扇形统计图表示部分占总体的百分比。"
+   },
+   {
+    "q": "比例尺就是图上距离与实际距离的比。",
+    "ans": 0,
+    "explain": "比例尺=图上距离:实际距离。"
+   },
+   {
+    "q": "半径是2厘米的圆，周长和面积相等。",
+    "ans": 1,
+    "explain": "数值虽相同但单位不同，不能说周长和面积相等。"
+   },
+   {
+    "q": "圆的对称轴就是它的直径所在的直线。",
+    "ans": 0,
+    "explain": "圆有无数条对称轴，都是直径所在直线。"
+   }
+  ]
+ },
+ "chinese": {
+  "1": [
+   {
+    "q": "“mā”是三拼音节。",
+    "ans": 1,
+    "explain": "“mā”是声母m和韵母a组成的，是两拼音节。"
+   },
+   {
+    "q": "“bái”的声母是b。",
+    "ans": 0,
+    "explain": "“白”的拼音bái，声母是b。"
+   },
+   {
+    "q": "“水”的声母是sh。",
+    "ans": 0,
+    "explain": "“水”读shuǐ，声母是sh。"
+   },
+   {
+    "q": "汉字“大”共有3画。",
+    "ans": 0,
+    "explain": "“大”的笔画是横、撇、捺，共3画。"
+   },
+   {
+    "q": "“木”字加上一撇就是“禾”。",
+    "ans": 0,
+    "explain": "“木”加一撇成“禾”。"
+   },
+   {
+    "q": "“人”和“入”读音相同。",
+    "ans": 1,
+    "explain": "“人”读rén，“入”读rù，读音不同。"
+   },
+   {
+    "q": "“山”的第二笔是竖。",
+    "ans": 1,
+    "explain": "“山”的笔画是竖、竖折、竖，第二笔是竖折。"
+   },
+   {
+    "q": "“上”的反义词是“下”。",
+    "ans": 0,
+    "explain": "“上”与“下”互为反义词。"
+   },
+   {
+    "q": "“田”字可以加一笔变成“由”。",
+    "ans": 0,
+    "explain": "“田”字加一笔可成“由”。"
+   },
+   {
+    "q": "“你、我、他”都是人称代词。",
+    "ans": 0,
+    "explain": "你我他分别指代第一、二、三人称。"
+   },
+   {
+    "q": "“妈”和“好”的声母相同。",
+    "ans": 1,
+    "explain": "“妈”声母是m，“好”声母是h，不相同。"
+   },
+   {
+    "q": "“耳”字共有5画。",
+    "ans": 1,
+    "explain": "“耳”共6画（横、竖、竖、横、横、横）。"
+   }
+  ],
+  "2": [
+   {
+    "q": "“弯弯的月亮像小船”是一个比喻句。",
+    "ans": 0,
+    "explain": "把月亮比作小船，是比喻句。"
+   },
+   {
+    "q": "句号“。”用在句子末尾。",
+    "ans": 0,
+    "explain": "句号表示一句话说完了。"
+   },
+   {
+    "q": "“一”在“一样”中读第二声。",
+    "ans": 0,
+    "explain": "“一”在去声前读第二声yí。"
+   },
+   {
+    "q": "“静悄悄”的“悄悄”读轻声。",
+    "ans": 1,
+    "explain": "“静悄悄”中“悄悄”读qiāo，不读轻声。"
+   },
+   {
+    "q": "问号“？”表示疑问。",
+    "ans": 0,
+    "explain": "问号用于疑问句末尾。"
+   },
+   {
+    "q": "“保护”和“爱护”意思相近。",
+    "ans": 0,
+    "explain": "二者都含有“照管、使不受损害”的意思。"
+   },
+   {
+    "q": "顿号“、”用来分隔句子中并列的词。",
+    "ans": 0,
+    "explain": "顿号表示并列词语之间的停顿。"
+   },
+   {
+    "q": "“天”和“夫”是形近字。",
+    "ans": 0,
+    "explain": "两字字形相近，容易混淆。"
+   },
+   {
+    "q": "“高兴”的反义词是“开心”。",
+    "ans": 1,
+    "explain": "“高兴”的反义词应是“难过”，开心是近义词。"
+   },
+   {
+    "q": "“日月潭”的“潭”是三点水旁。",
+    "ans": 0,
+    "explain": "“潭”部首是氵（三点水）。"
+   },
+   {
+    "q": "“春”字可以分成“日”和“夫”两个部分。",
+    "ans": 0,
+    "explain": "“春”由“日”和“??”组成，可视为三+日结构。"
+   },
+   {
+    "q": "“称赞”和“批评”意思相反。",
+    "ans": 0,
+    "explain": "称赞是夸，批评是指出缺点，互为反义。"
+   }
+  ],
+  "3": [
+   {
+    "q": "“五光十色”形容颜色多而美丽。",
+    "ans": 0,
+    "explain": "五光十色形容色彩鲜艳、花样繁多。"
+   },
+   {
+    "q": "拟人就是把物当作人来写。",
+    "ans": 0,
+    "explain": "拟人赋予事物人的动作、情感等。"
+   },
+   {
+    "q": "“他跑得像风一样快”是比喻句。",
+    "ans": 0,
+    "explain": "把跑的速度比作风，是比喻句。"
+   },
+   {
+    "q": "“虽然……但是……”表示转折关系。",
+    "ans": 0,
+    "explain": "前后意思发生转折。"
+   },
+   {
+    "q": "“陆续”和“继续”意思完全相同。",
+    "ans": 1,
+    "explain": "“陆续”表示先后不断，“继续”表示接着做，意思不同。"
+   },
+   {
+    "q": "排比句由三个或三个以上结构相似的句子组成。",
+    "ans": 0,
+    "explain": "排比是把三个或以上结构相似、意思相关的句子排列。"
+   },
+   {
+    "q": "“观察”的“察”是上下结构。",
+    "ans": 0,
+    "explain": "“察”由宀和祭组成，是上下结构。"
+   },
+   {
+    "q": "修改病句时，成分残缺的病句要补充缺少的成分。",
+    "ans": 0,
+    "explain": "成分残缺需补全句子成分。"
+   },
+   {
+    "q": "“万紫千红”只能用来形容花朵。",
+    "ans": 1,
+    "explain": "万紫千红常形容百花齐放、色彩艳丽，也可形容景象繁荣。"
+   },
+   {
+    "q": "“不但……而且……”表示递进关系。",
+    "ans": 0,
+    "explain": "后一分句比前一分句更进一步。"
+   },
+   {
+    "q": "“漂亮”和“美丽”是近义词。",
+    "ans": 0,
+    "explain": "两者都形容好看。"
+   },
+   {
+    "q": "“湿润”的“润”可以组词“湿润”。",
+    "ans": 0,
+    "explain": "润与湿搭配成湿润。"
+   }
+  ],
+  "4": [
+   {
+    "q": "“守株待兔”告诉我们要靠勤劳，不能心存侥幸。",
+    "ans": 0,
+    "explain": "寓言讽刺不劳而获、心存侥幸。"
+   },
+   {
+    "q": "“举世闻名”和“默默无闻”是一对反义词。",
+    "ans": 0,
+    "explain": "一个名扬天下，一个不为人知。"
+   },
+   {
+    "q": "“因为……所以……”表示因果关系。",
+    "ans": 0,
+    "explain": "前因后果。"
+   },
+   {
+    "q": "“危在旦夕”形容情况非常危险。",
+    "ans": 0,
+    "explain": "危险就在眼前。"
+   },
+   {
+    "q": "“兴高采烈”和“垂头丧气”意思相近。",
+    "ans": 1,
+    "explain": "一个高兴一个沮丧，是反义词。"
+   },
+   {
+    "q": "“佳句”的“佳”是“美好”的意思。",
+    "ans": 0,
+    "explain": "佳指美好、优秀。"
+   },
+   {
+    "q": "“他的成绩虽然很好，但是从不骄傲。”句子表达恰当。",
+    "ans": 0,
+    "explain": "转折关系使用恰当。"
+   },
+   {
+    "q": "“赞叹不已”中“已”是“停止”的意思。",
+    "ans": 0,
+    "explain": "不已即不停，赞叹不停。"
+   },
+   {
+    "q": "《纪昌学射》告诉我们做事要打好基本功。",
+    "ans": 0,
+    "explain": "寓言强调扎实的基本功。"
+   },
+   {
+    "q": "“欣喜若狂”形容高兴到了极点。",
+    "ans": 0,
+    "explain": "欣喜若狂即高兴得像发狂一样。"
+   },
+   {
+    "q": "“聚精会神”和“心不在焉”是近义词。",
+    "ans": 1,
+    "explain": "一个专心一个分心，是反义词。"
+   },
+   {
+    "q": "“腾云驾雾”可以用来形容奔驰迅速。",
+    "ans": 0,
+    "explain": "腾云驾雾形容奔驰迅速或本领高强。"
+   }
+  ],
+  "5": [
+   {
+    "q": "列数字是一种常用的说明方法。",
+    "ans": 0,
+    "explain": "用具体数字说明事物特征。"
+   },
+   {
+    "q": "“桂林山水甲天下”中的“甲”是“第一”的意思。",
+    "ans": 0,
+    "explain": "甲天下即天下第一。"
+   },
+   {
+    "q": "《西游记》的作者是罗贯中。",
+    "ans": 1,
+    "explain": "《西游记》的作者是吴承恩，罗贯中著《三国演义》。"
+   },
+   {
+    "q": "“太阳离我们约有一亿五千万千米远”运用了列数字的说明方法。",
+    "ans": 0,
+    "explain": "用具体数字说明太阳距离远。"
+   },
+   {
+    "q": "《草船借箭》选自《三国演义》。",
+    "ans": 0,
+    "explain": "草船借箭是《三国演义》中诸葛亮的故事。"
+   },
+   {
+    "q": "说明文的语言必须准确、科学。",
+    "ans": 0,
+    "explain": "说明文要求语言准确严谨。"
+   },
+   {
+    "q": "“对比”也是一种说明方法。",
+    "ans": 0,
+    "explain": "对比可用于突出事物特征。"
+   },
+   {
+    "q": "“举例子”能帮助读者更具体地理解事物。",
+    "ans": 0,
+    "explain": "举例使说明更具体、有说服力。"
+   },
+   {
+    "q": "《示儿》的作者是唐代诗人李白。",
+    "ans": 1,
+    "explain": "《示儿》是宋代陆游所作。"
+   },
+   {
+    "q": "“打比方”就是运用比喻来形象说明。",
+    "ans": 0,
+    "explain": "打比方即比喻说明。"
+   },
+   {
+    "q": "“走遍天下书为侣”中“侣”是“伴侣”的意思。",
+    "ans": 0,
+    "explain": "侣即伴侣、同伴。"
+   },
+   {
+    "q": "“四面八方”形容范围广泛。",
+    "ans": 0,
+    "explain": "四面八方指各个方面或各个地方。"
+   }
+  ],
+  "6": [
+   {
+    "q": "《红楼梦》的作者是曹雪芹。",
+    "ans": 0,
+    "explain": "《红楼梦》前80回作者为曹雪芹。"
+   },
+   {
+    "q": "“三人行，必有我师焉”出自《论语》。",
+    "ans": 0,
+    "explain": "此句出自《论语·述而》。"
+   },
+   {
+    "q": "《水浒传》中有武松打虎的故事。",
+    "ans": 0,
+    "explain": "武松景阳冈打虎是《水浒传》名段。"
+   },
+   {
+    "q": "《汤姆·索亚历险记》的作者是马克·吐温。",
+    "ans": 0,
+    "explain": "美国作家马克·吐温所著。"
+   },
+   {
+    "q": "“门庭若市”形容人来人往，非常热闹。",
+    "ans": 0,
+    "explain": "门庭若市形容交际来往的人很多。"
+   },
+   {
+    "q": "《鲁滨逊漂流记》的作者是英国作家笛福。",
+    "ans": 0,
+    "explain": "丹尼尔·笛福著《鲁滨逊漂流记》。"
+   },
+   {
+    "q": "“之乎者也”都是文言文中常见的虚词。",
+    "ans": 0,
+    "explain": "之乎者也常见于文言文。"
+   },
+   {
+    "q": "朱自清的《匆匆》表达了作者对时光流逝的感叹。",
+    "ans": 0,
+    "explain": "《匆匆》感叹时间易逝。"
+   },
+   {
+    "q": "《为人民服务》是毛泽东同志的一篇演讲稿。",
+    "ans": 0,
+    "explain": "《为人民服务》是毛泽东在张思德追悼会上的演讲。"
+   },
+   {
+    "q": "“弈秋”是《学弈》中善于下棋的人。",
+    "ans": 0,
+    "explain": "弈秋是全国下棋能手。"
+   },
+   {
+    "q": "《石灰吟》的作者是唐代诗人于谦。",
+    "ans": 1,
+    "explain": "《石灰吟》是明代于谦所作。"
+   },
+   {
+    "q": "“千磨万击还坚劲，任尔东西南北风”出自《竹石》。",
+    "ans": 0,
+    "explain": "此句出自郑燮《竹石》。"
+   }
+  ]
+ }
+};
+function generateJudgeQuestions(subject, grade, count){
+  const bank = JUDGE_BANK && JUDGE_BANK[subject] && JUDGE_BANK[subject][grade];
+  if(!bank || !bank.length) return [];
+  const pool = bank.slice();
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+  return pool.slice(0, count).map(function(b, idx){
+    return {
+      type: 'choice', judge: true,
+      q: b.q,
+      opts: ['正确','错误'],
+      ans: b.ans,
+      explain: b.explain,
+      diff: 'basic'
+    };
+  });
+}
+
 function generateMathQuestions(grade,term,unitId,count=100){
   const questions=[];
   const types=['choice','fill','calc','app'];
@@ -12563,7 +13451,7 @@ function startXscReviewPractice(subject, modName, topicName, layer){
   var questions = [];
   units.forEach(function(u){
     try {
-      var qs = subject === 'math' ? generateMathQuestions(u.g, u.t, u.id, 6) : generateChineseQuestions(u.g, u.t, u.id, 6);
+      var qs = subject === 'math' ? generateMathQuestions(u.g, u.t, u.id, 12) : generateChineseQuestions(u.g, u.t, u.id, 12);
       if(qs && qs.length){
         qs.forEach(function(q){ if(!q.reviewFrom) q.reviewFrom = u.g + '年级' + (u.t==='up'?'上':'下') + '·' + u.id; });
         questions = questions.concat(qs);
@@ -13394,7 +14282,7 @@ function renderPracticePage(){
       </div>
       <div class="question-card">
         <div class="q-meta">
-          <span class="q-tag type-${q.type}">${q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题'}</span>
+          <span class="q-tag type-${q.type}">${q.judge?'判断题':(q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题')}</span>
           <span class="q-tag diff-${q.diff}">${q.diff==='basic'?'基础':q.diff==='medium'?'中等':'拔高'}</span>
         </div>
         <div class="q-text">${q.q}</div>
@@ -14753,9 +15641,14 @@ function startExam(type){
     examTitle = '期末考试（全册综合）';
   }
   
-  // 从各单元随机抽取题目，共30题（跨单元全局题干去重，2026-08-31 修复）
+  // 判断题：数学/语文按真实试卷比例（30题中5题判断，2分×5=10分）
+  const judgeCount = (subject==='math'||subject==='chinese') ? 5 : 0;
+  let judgeQs = [];
+  if(judgeCount>0){ judgeQs = generateJudgeQuestions(subject, grade, judgeCount); }
+  const targetCount = 30 - judgeQs.length;
+  // 从各单元随机抽取题目（跨单元全局题干去重，2026-08-31 修复）
   let allQuestions = [];
-  const perUnit = Math.ceil(30 / units.length);
+  const perUnit = Math.ceil(targetCount / units.length);
   units.forEach(uid=>{
     let unitQuestions = [];
     if(subject==='math'){
@@ -14770,7 +15663,7 @@ function startExam(type){
   const seenStems = new Set();
   const pushUnique = (arr)=>{
     for(const q of arr){
-      if(questions.length >= 30) return;
+      if(questions.length >= targetCount) return;
       const k = stemKeyOf(q);
       if(!seenStems.has(k)){ seenStems.add(k); questions.push(q); }
     }
@@ -14778,22 +15671,25 @@ function startExam(type){
   pushUnique(allQuestions);
   // 若不足30题，从各单元补充更多
   let guard = 0;
-  while(questions.length < 30 && guard < 8){
+  while(questions.length < targetCount && guard < 8){
     guard++;
     units.forEach(uid=>{
-      if(questions.length >= 30) return;
+      if(questions.length >= targetCount) return;
       let extra = [];
       if(subject==='math'){ extra = generateMathQuestions(grade, term, uid, 8); }
       else{ extra = generateChineseQuestions(grade, term, uid, 8); }
       pushUnique(extra);
     });
   }
+  // 并入判断题
+  questions = questions.concat(judgeQs);
   // 打乱顺序，保持30题不重复
   questions.sort(()=>Math.random()-0.5);
   
   // 分配分数（30题总分正好100分）
   questions = questions.map((q,i)=>{
     let score = 3;
+    if(q.judge) score = 2;
     if(q.type==='calc') score = 5;
     if(q.type==='app') score = q.diff==='hard' ? 8 : 6;
     return {...q, score, examIndex: i+1};
@@ -14807,6 +15703,7 @@ function startExam(type){
       const t = adjustOrder[ai];
       for(const qq of questions){
         if(diff===0) break;
+        if(qq.judge) continue;
         if(diff>0){ qq.score++; diff--; }
         else if(qq.score>1){ qq.score--; diff++; }
       }
@@ -14916,7 +15813,7 @@ function renderExamPage(){
   
   let questionHtml = '';
   if(q.type==='choice'){
-    questionHtml = `<div class="question-type">选择题（${q.score}分）</div>
+    questionHtml = `<div class="question-type">${q.judge?'判断题':'选择题'}（${q.score}分）</div>
       <div class="question-text">${q.examIndex}. ${q.q}</div>
       ${q.image?`<div class="q-image">${q.image}</div>`:''}
       <div class="answer-tip">点击下方选项选择答案</div>
@@ -14985,7 +15882,7 @@ function renderExamResult(){
     const itemHtml = state.questions.map(function(q,i){
       const got = state.correct[i] ? q.score : 0;
       const mark = state.correct[i] ? '✓' : '✗';
-      const typeName = q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题';
+      const typeName = q.judge?'判断题':(q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题');
       return '<div class="xsc-score-item">' +
         '<span class="num">第'+(i+1)+'题</span>' +
         '<span class="type">'+typeName+'</span>' +
@@ -15024,7 +15921,7 @@ function renderExamResult(){
       '<div class="xsc-summary-bar">总分 <b class="redpen-pts" style="font-size:20px;margin:0 3px">'+state.totalScore+'</b> / 100 分 · 答对 '+state.correctCount+' 题 · 正确率 '+accuracy+'% · 用时 '+minutes+'分'+seconds+'秒</div>' +
       '<div class="xsc-section-title">📝 逐题答案与解析</div>' +
       state.questions.map(function(q,i){
-        const typeName = q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题';
+        const typeName = q.judge?'判断题':(q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题');
         const correctAnswer = q.type==='choice' ? String.fromCharCode(65+q.ans)+'. '+q.opts[q.ans] : q.ans;
         return '<div class="xsc-review-item '+(state.correct[i]?'correct':'wrong')+'">' +
           '<div class="xsc-review-head">' +
