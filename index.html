@@ -13211,7 +13211,7 @@ function renderExamModal(){
     subjectHtml = '<div class="modal-section"><div class="modal-section-title">选择科目</div><div class="modal-options">' +
       '<div class="modal-option ' + (examModalState.subject === 'chinese' ? 'active' : '') + '" onclick="selectExamSubject(\'chinese\')">📖 语文</div>' +
       '<div class="modal-option ' + (examModalState.subject === 'math' ? 'active' : '') + '" onclick="selectExamSubject(\'math\')">🔢 数学</div>' +
-      '<div class="modal-option ' + (examModalState.subject === 'english' ? 'active' : '') + '" onclick="selectExamSubject(\'english\')">🔤 英语</div>' +
+      '<div class="modal-option" onclick="examTip(\'英语为学习板块（自然拼读·音标），暂不支持考试，请在「英语学习」板块学习\')">🔤 英语</div>' +
     '</div></div>';
   }
   
@@ -13263,6 +13263,21 @@ function selectExamSubject(s){
   examModalState.subject = s;
   renderExamModal();
 }
+function examTip(msg){
+  const box = document.getElementById('examModal');
+  if(!box) return;
+  let tip = box.querySelector('.exam-tip');
+  if(!tip){
+    tip = document.createElement('div');
+    tip.className = 'exam-tip';
+    tip.style.cssText = 'margin-top:10px;padding:10px;background:#fff7e6;color:#b8860b;border-radius:8px;font-size:13px;text-align:center;line-height:1.5';
+    box.appendChild(tip);
+  }
+  tip.textContent = msg;
+  clearTimeout(examTip._t);
+  examTip._t = setTimeout(function(){ tip.textContent = ''; }, 3500);
+}
+
 function selectExamType(t){
   examModalState.examType = t;
   renderExamModal();
@@ -13893,12 +13908,33 @@ function startPracticeReal(){
   navigate('practice');
 }
 
+function showGlobalTip(msg){
+  let el = document.getElementById('globalTip');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'globalTip';
+    el.style.cssText = 'position:fixed;top:64px;left:50%;transform:translateX(-50%);background:#fff7e6;color:#b8860b;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:90%;text-align:center;line-height:1.5';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  clearTimeout(showGlobalTip._t);
+  showGlobalTip._t = setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 3000);
+}
+
 function startExam(type){
   const grade=STATE.selectedGrade;
   const term=STATE.selectedTerm;
   const subject=STATE.selectedSubject;
-  const unitId=STATE.selectedUnit;
-  const curriculum=CURRICULUM[grade][term][subject];
+  let unitId=STATE.selectedUnit;
+  const curriculum=CURRICULUM[grade]&&CURRICULUM[grade][term]&&CURRICULUM[grade][term][subject];
+  if(!curriculum || !curriculum.units || !curriculum.units.length){
+    showGlobalTip(subject==='english' ? '英语为学习板块（自然拼读·音标），暂不支持考试' : '当前科目暂无题库，请选择其他科目');
+    return;
+  }
+  if(!unitId || !curriculum.units.some(function(u){return u.id===unitId;})){
+    unitId = curriculum.units[0].id;
+    STATE.selectedUnit = unitId;
+  }
   
   // 根据考试类型确定题目范围
   let units = [];
