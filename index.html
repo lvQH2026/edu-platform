@@ -6268,10 +6268,15 @@ function generateMathQuestions(grade,term,unitId,count=100){
   const templates=getMathTemplates(grade,term,unitId);
   const deckState={deck:[],idx:0};
   const usedStems={};
+  const seenStems={};
   let drawN=0;
   while(questions.length<count && drawN<count*4){
     const q=drawDistinctQuestion(templates, deckState, usedStems, 100);
     drawN++;
+    if(!q) break;
+    const sk=stemKeyOf(q);
+    if(seenStems[sk]) break;
+    seenStems[sk]=1;
     const subs=splitCalcMulti(q);
     subs.forEach((sq,si)=>{
       if(questions.length>=count) return;
@@ -9025,8 +9030,13 @@ function generateChineseQuestions(grade,term,unitId,count=100){
   const templates=getChineseTemplates(grade,term,unitId);
   const deckState={deck:[],idx:0};
   const usedStems={};
+  const seenStems={};
   for(let i=0;i<count;i++){
     const q=drawDistinctQuestion(templates, deckState, usedStems, 100);
+    if(!q) break;
+    const sk=stemKeyOf(q);
+    if(seenStems[sk]) break;
+    seenStems[sk]=1;
     q.id=`${unitId}_${String(i+1).padStart(2,'0')}`;
     q.diff=diffs[i%diffs.length];
     autoIllustrate(q, unitId);
@@ -9281,7 +9291,7 @@ function getChineseTemplates(grade,term,unitId){
     templates.push(()=>({type:'choice',q:'《盼》的作者是？',opts:['铁凝','老舍','鲁迅','冰心'],ans:0,explain:'《盼》作者是当代作家铁凝。'}));
     templates.push(()=>({type:'choice',q:'《盼》中"我"盼望着什么？',opts:['盼望下雨，好穿新雨衣','盼望放假','盼望过生日','盼望下雨天不用上学'],ans:0,explain:'妈妈给"我"买了新雨衣，"我"一直盼着下雨好穿上它。'}));
     templates.push(()=>({type:'fill',q:'《夏天里的成长》中，夏天里草长、树长、____也在长。',ans:'山（地）',explain:'课文中写夏天里草长、树木长、山一天天变丰满，山也"长"了。'}));
-    templates.push(()=>({type:'choice',q:'夏天里，随着农作物迅速成长，农民盼望的是？',ans:'收获（庄稼丰收）',explain:'填"收获（庄稼丰收）"。夏天农作物迅速生长，农民盼望秋天有好收成。'}));
+    templates.push(()=>({type:'choice',q:'夏天里，随着农作物迅速成长，农民盼望的是？',opts:['收获（庄稼丰收）','下雨','庄稼生病','天旱少雨'],ans:0,explain:'夏天农作物迅速生长，农民盼望秋天有好收成。'}));
     templates.push(()=>({type:'app',q:'《盼》中"我"得到新雨衣后，为什么急切地盼望下雨？',ans:'因为新雨衣是"我"期盼已久的礼物，只有下雨天才能穿上它，所以"我"急切盼望下雨。',explain:'结合"我"对新雨衣的喜爱和"穿新雨衣"的愿望来回答。'}));
     templates.push(()=>({type:'choice',q:'《夏天里的成长》通过写生物从小到大来说明什么？',opts:['万物在夏天里迅速成长','生物都很大','夏天植物最多','生物长得慢'],ans:0,explain:'课文通过描写瓜藤、竹子、高粱等生物迅速生长，说明万物在夏天里迅速成长。'}));
     templates.push(()=>({type:'choice',q:'《盼》一文在写法上突出的特点是？',opts:['通过丰富的心理活动描写表达期盼之情','大量运用排比','多用文言','没有中心'],ans:0,explain:'课文细致刻画了"我"盼雨的心情，心理活动描写生动传神。'}));
@@ -9863,7 +9873,7 @@ function getChineseTemplates(grade,term,unitId){
     templates.push(()=>({type:'choice',q:'《"精彩极了"和"糟糕透了"》中，母亲和父亲对"我"的诗的评价分别是？',opts:['"精彩极了"和"糟糕透了"','"糟糕透了"和"精彩极了"','都夸好','都批评'],ans:0,explain:'母亲说"精彩极了"，父亲说"糟糕透了"，两种不同的评价。'}));
     templates.push(()=>({type:'choice',q:'《"精彩极了"和"糟糕透了"》告诉我们？',opts:['爱有不同形式，要正确对待鼓励与批评','写诗很难','父母偏心','要听母亲的话'],ans:0,explain:'母亲的鼓励和父亲的严厉都是爱，要正确认识这两种爱，走好人生之路。'}));
     templates.push(()=>({type:'fill',q:'《慈母情深》中，母亲工作的地方是在一家____。',ans:'工厂（缝纫机工厂）',explain:'母亲在低矮潮湿、噪声很大的工厂里做缝纫工。'}));
-    templates.push(()=>({type:'choice',q:'《慈母情深》中，母亲给"我"的钱是？',ans:'一元五角',explain:'母亲掏出衣兜，掏出一卷揉得皱皱的毛票，用龟裂的手指数着，给了"我"一元五角。'}));
+    templates.push(()=>({type:'choice',q:'《慈母情深》中，母亲给"我"的钱是？',opts:['一元五角','一元二角','五元','一角五分'],ans:0,explain:'母亲掏出衣兜，掏出一卷揉得皱皱的毛票，用龟裂的手指数着，给了"我"一元五角。'}));
     templates.push(()=>({type:'choice',q:'《父爱之舟》中，父亲送"我"上学的方式是？',opts:['摇着小船送','坐汽车','步行','骑马'],ans:0,explain:'父亲经常摇着小船送"我"去上学，小船满载着父爱。'}));
     templates.push(()=>({type:'choice',q:'《父爱之舟》中，父亲对"我"的爱主要体现在？',opts:['生活中的点点滴滴（摇船送学、买豆腐脑、缝补等）','给很多钱','严厉批评','很少见面'],ans:0,explain:'课文通过摇船送学、买豆腐脑、缝被褥等生活小事，表现父爱的深沉细腻。'}));
     templates.push(()=>({type:'choice',q:'《"精彩极了"和"糟糕透了"》中，作者长大后认识到？',opts:['两种评价都是爱，需要平衡','母亲对父亲错','父亲对母亲错','都不重要'],ans:0,explain:'作者认识到母亲的鼓励和父亲的严格要求共同塑造了他，都是深深的爱。'}));
