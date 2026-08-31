@@ -1589,6 +1589,42 @@ a{text-decoration:none;color:inherit}
 .correct-feedback{background:#e8f8ef;color:#1d9a5c;font-size:14px;font-weight:600;padding:10px 14px;border-radius:10px;margin:10px 0;text-align:center}
 .q-image{text-align:center;padding:14px 10px}
 
+
+/* ===== 考试批改结果页（提交→成绩→确认→解析）===== */
+.xsc-result-card{ background: var(--bg-card); border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--shadow-sm); text-align:center; margin-bottom: var(--space-md); }
+.xsc-score-ring{ width: 132px; height: 132px; border-radius: 50%; margin: 0 auto var(--space-sm); display:flex; flex-direction:column; align-items:center; justify-content:center; background: #fff; border: 5px solid var(--primary); box-shadow: var(--shadow-sm); }
+.xsc-score-num{ font-size: 40px; font-weight: 800; line-height: 1; }
+.xsc-score-total{ font-size: 13px; color: #999; margin-top: 4px; }
+.xsc-level{ font-size: 18px; font-weight: 700; margin-top: 6px; }
+.xsc-stats{ display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-sm); margin-bottom: var(--space-md); }
+.xsc-stat{ background: #f6f8ff; border-radius: var(--radius-md); padding: 10px 4px; text-align: center; }
+.xsc-stat .v{ font-size: 18px; font-weight: 700; color: var(--primary); }
+.xsc-stat .l{ font-size: 11px; color: #888; margin-top: 2px; }
+.xsc-comment{ background: #fff7e6; border: 1px dashed #f0b54a; border-radius: var(--radius-md); padding: 10px 12px; font-size: 13px; color: #8a6d1a; margin-bottom: var(--space-md); text-align: left; line-height: 1.5; }
+.xsc-section-title{ font-size: 15px; font-weight: 700; color: #333; margin: 16px 0 10px; }
+.xsc-score-list{ display: flex; flex-direction: column; gap: 6px; }
+.xsc-score-item{ display: flex; align-items: center; justify-content: space-between; background: #fafbff; border-radius: var(--radius-sm); padding: 8px 12px; font-size: 13px; }
+.xsc-score-item .num{ font-weight: 600; color: #555; }
+.xsc-score-item .type{ color: #999; font-size: 12px; }
+.xsc-score-item .mark{ font-size: 15px; font-weight: 700; }
+.xsc-score-item .pts{ font-weight: 700; }
+.xsc-confirm-btn{ width: 100%; padding: 14px; font-size: 16px; font-weight: 700; }
+.xsc-summary-bar{ background: #eef4ff; border-radius: var(--radius-md); padding: 10px 12px; font-size: 13px; color: #444; margin-bottom: 6px; line-height: 1.5; }
+.xsc-summary-bar b{ color: var(--primary); font-size: 18px; }
+.xsc-review-item{ background: #fff; border: 1px solid #eee; border-left: 4px solid #ccc; border-radius: var(--radius-md); padding: 12px; margin-bottom: 10px; }
+.xsc-review-item.correct{ border-left-color: #27ae60; }
+.xsc-review-item.wrong{ border-left-color: #e74c3c; }
+.xsc-review-head{ display: flex; gap: 8px; align-items: center; font-size: 12px; color: #666; margin-bottom: 6px; flex-wrap: wrap; }
+.xsc-review-head .n{ font-weight: 700; color: #333; }
+.xsc-review-head .t{ background: #f0f2f5; border-radius: 4px; padding: 1px 6px; }
+.xsc-review-head .s{ color: #999; }
+.xsc-review-head .r{ font-weight: 700; }
+.xsc-review-head .r.ok{ color: #27ae60; }
+.xsc-review-head .r.no{ color: #e74c3c; }
+.xsc-review-q{ font-size: 14px; color: #333; margin-bottom: 6px; line-height: 1.5; }
+.xsc-review-a{ font-size: 12px; color: #555; line-height: 1.7; }
+.xsc-review-e{ background: #f8f9fb; border-radius: var(--radius-sm); padding: 8px 10px; font-size: 12px; color: #444; margin-top: 8px; line-height: 1.7; }
+
 </style>
 </head>
 <body>
@@ -14777,6 +14813,7 @@ function startExam(type){
 function submitExam(){
   const state = STATE.examState;
   state.submitted = true;
+  state.scoreConfirmed = false;
   state.timeUsed = Math.floor((Date.now() - state.startTime) / 1000);
   // 计算得分
   let totalScore = 0;
@@ -14909,59 +14946,89 @@ function renderExamPage(){
 // 渲染考试结果页面
 function renderExamResult(){
   const state = STATE.examState;
+  if(!state || !state.questions) return '<div class="result-container">数据异常，请重新考试</div>';
   const minutes = Math.floor(state.timeUsed / 60);
   const seconds = state.timeUsed % 60;
   const accuracy = (state.correctCount / state.questions.length * 100).toFixed(1);
-  
-  let level = '';
-  let levelColor = '';
-  if(state.totalScore >= 90){ level = '优秀'; levelColor = '#27ae60'; }
-  else if(state.totalScore >= 80){ level = '良好'; levelColor = '#3498db'; }
-  else if(state.totalScore >= 60){ level = '及格'; levelColor = '#f39c12'; }
-  else{ level = '需努力'; levelColor = '#e74c3c'; }
-  
-  return `
-  <div class="result-header">
-    <div class="result-title">${state.title} - 考试结果</div>
-  </div>
-  <div class="result-container">
-    <div class="score-card">
-      <div class="score-circle" style="border-color:${levelColor}">
-        <div class="score-number" style="color:${levelColor}">${state.totalScore}</div>
-        <div class="score-total">/ 100分</div>
-      </div>
-      <div class="score-level" style="color:${levelColor}">${level}</div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-item"><div class="stat-value">${state.correctCount}</div><div class="stat-label">答对题数</div></div>
-      <div class="stat-item"><div class="stat-value">${state.questions.length-state.correctCount}</div><div class="stat-label">答错题数</div></div>
-      <div class="stat-item"><div class="stat-value">${accuracy}%</div><div class="stat-label">正确率</div></div>
-      <div class="stat-item"><div class="stat-value">${minutes}分${seconds}秒</div><div class="stat-label">用时</div></div>
-    </div>
-    <div class="answer-review">
-      <h3>📝 答案与解析</h3>
-      ${state.questions.map((q,i)=>`
-        <div class="review-item ${state.correct[i]?'correct':'wrong'}">
-          <div class="review-header">
-            <span class="review-num">第${i+1}题</span>
-            <span class="review-type">${q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题'}</span>
-            <span class="review-score">${q.score}分</span>
-            <span class="review-result">${state.correct[i]?'✓ 正确':'✗ 错误'}</span>
-          </div>
-          <div class="review-question">${q.q}</div>
-          <div class="review-answer">
-            <div><strong>你的答案：</strong>${formatUserAnswer(q, state.answers[i])}</div>
-            <div><strong>正确答案：</strong>${q.type==='choice'?String.fromCharCode(65+q.ans)+'. '+q.opts[q.ans]:q.ans}</div>
-          </div>
-          <div class="review-explain"><strong>解析：</strong>${q.explain||'暂无解析'}</div>
-        </div>
-      `).join('')}
-    </div>
-    <div class="result-actions">
-      <button class="btn btn-primary" onclick="navigate('study')">返回单元学习</button>
-      <button class="btn btn-outline" onclick="startExam('${state.type}')">重新考试</button>
-    </div>
-  </div>`;
+
+  if(!state.scoreConfirmed){
+    // ========== 阶段一：批改成绩页（模拟真实老师批改，含总分与各题得分）==========
+    let level = '', levelColor = '', comment = '';
+    if(state.totalScore >= 90){ level='优秀'; levelColor='#27ae60'; comment='太棒了！基础扎实，继续保持这份专注，向满分冲刺！'; }
+    else if(state.totalScore >= 80){ level='良好'; levelColor='#3498db'; comment='很不错！大部分知识都掌握了，错题弄懂后再练一次会更稳。'; }
+    else if(state.totalScore >= 60){ level='及格'; levelColor='#f39c12'; comment='基本达标。请认真看下方各题得分与解析，把薄弱点补上。'; }
+    else{ level='需努力'; levelColor='#e74c3c'; comment='别灰心！仔细看每道题解析，把错题弄明白，下次一定能进步！'; }
+
+    const itemHtml = state.questions.map(function(q,i){
+      const got = state.correct[i] ? q.score : 0;
+      const mark = state.correct[i] ? '✓' : '✗';
+      const markColor = state.correct[i] ? '#27ae60' : '#e74c3c';
+      const typeName = q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题';
+      return '<div class="xsc-score-item">' +
+        '<span class="num">第'+(i+1)+'题</span>' +
+        '<span class="type">'+typeName+'</span>' +
+        '<span class="mark" style="color:'+markColor+'">'+mark+'</span>' +
+        '<span class="pts" style="color:'+markColor+'">'+got+' / '+q.score+' 分</span>' +
+        '</div>';
+    }).join('');
+
+    return '<div class="result-header"><div class="result-title">📝 '+state.title+' · 批改结果</div></div>' +
+      '<div class="result-container">' +
+        '<div class="xsc-result-card">' +
+          '<div class="xsc-score-ring" style="border-color:'+levelColor+'">' +
+            '<div class="xsc-score-num" style="color:'+levelColor+'">'+state.totalScore+'</div>' +
+            '<div class="xsc-score-total">/ 100分</div>' +
+          '</div>' +
+          '<div class="xsc-level" style="color:'+levelColor+'">'+level+'</div>' +
+        '</div>' +
+        '<div class="xsc-stats">' +
+          '<div class="xsc-stat"><div class="v" style="color:#27ae60">'+state.correctCount+'</div><div class="l">答对题数</div></div>' +
+          '<div class="xsc-stat"><div class="v" style="color:#e74c3c">'+(state.questions.length-state.correctCount)+'</div><div class="l">答错题数</div></div>' +
+          '<div class="xsc-stat"><div class="v">'+accuracy+'%</div><div class="l">正确率</div></div>' +
+          '<div class="xsc-stat"><div class="v" style="font-size:14px">'+minutes+'分'+seconds+'秒</div><div class="l">用时</div></div>' +
+        '</div>' +
+        '<div class="xsc-comment">💬 老师批语：'+comment+'</div>' +
+        '<div class="xsc-section-title">📋 各题得分</div>' +
+        '<div class="xsc-score-list">'+itemHtml+'</div>' +
+        '<div class="result-actions" style="margin-top:18px">' +
+          '<button class="btn btn-primary xsc-confirm-btn" onclick="confirmExamScore()">✅ 确认成绩</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // ========== 阶段二：答案与解析页（用户点"确认"后进入）==========
+  return '<div class="result-header"><div class="result-title">'+state.title+' · 答案与解析</div></div>' +
+    '<div class="result-container">' +
+      '<div class="xsc-summary-bar">总分 <b>'+state.totalScore+'</b> / 100 分 · 答对 '+state.correctCount+' 题 · 正确率 '+accuracy+'% · 用时 '+minutes+'分'+seconds+'秒</div>' +
+      '<div class="xsc-section-title">📝 逐题答案与解析</div>' +
+      state.questions.map(function(q,i){
+        const typeName = q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题';
+        const correctAnswer = q.type==='choice' ? String.fromCharCode(65+q.ans)+'. '+q.opts[q.ans] : q.ans;
+        return '<div class="xsc-review-item '+(state.correct[i]?'correct':'wrong')+'">' +
+          '<div class="xsc-review-head">' +
+            '<span class="n">第'+(i+1)+'题</span>' +
+            '<span class="t">'+typeName+'</span>' +
+            '<span class="s">'+q.score+'分</span>' +
+            '<span class="r '+(state.correct[i]?'ok':'no')+'">'+(state.correct[i]?'✓ 正确':'✗ 错误')+'</span>' +
+          '</div>' +
+          '<div class="xsc-review-q">'+q.q+'</div>' +
+          '<div class="xsc-review-a"><div>你的答案：<b>'+(formatUserAnswer(q, state.answers[i]) || '未作答')+'</b></div><div>正确答案：<b style="color:#27ae60">'+correctAnswer+'</b></div></div>' +
+          '<div class="xsc-review-e">📖 解析：'+(q.explain||'暂无解析')+'</div>' +
+        '</div>';
+      }).join('') +
+      '<div class="result-actions">' +
+        '<button class="btn btn-primary" onclick="navigate(\'study\')">返回单元学习</button>' +
+        '<button class="btn btn-outline" onclick="startExam(\''+state.type+'\')">重新考试</button>' +
+      '</div>' +
+    '</div>';
+}
+
+// 用户点击"确认成绩"后进入答案与解析页
+function confirmExamScore(){
+  if(!STATE.examState) return;
+  STATE.examState.scoreConfirmed = true;
+  window.scrollTo(0,0);
+  render();
 }
 
 // 考试导航函数
