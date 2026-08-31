@@ -6298,19 +6298,47 @@ function extractFraction(t){
   if(m && parseInt(m[2])<=12 && parseInt(m[2])>1 && parseInt(m[1])<=parseInt(m[2])) return {num:parseInt(m[1]),den:parseInt(m[2])};
   return null;
 }
+function parseDiscount(t){
+  const cn = {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};
+  let m = t.match(/([一二三四五六七八九]+)\s*折/);
+  if(m){
+    const s1 = m[1]; let v = 0;
+    for(const c of s1){ v = v*10 + (cn[c]||0); }
+    return s1.length === 1 ? v*10 : v;
+  }
+  m = t.match(/(\d+)\s*折/);
+  if(m) return parseInt(m[1])*10;
+  return null;
+}
+
 function autoIllustrate(q, unitKey){
   if(q.image) return q;
   const t = q.q;
   let img = '';
+  // ---- 工具：从题干解析尺寸（如"底是5厘米/高8/上底4/棱长6"） ----
+  const pd = function(key){
+    const m = t.match(new RegExp(key + '[是为]?\\s*(\\d+(?:\\.\\d+)?)'));
+    return m ? parseFloat(m[1]) : null;
+  };
+  const pdR = function(){
+    const r = pd('半径'); if(r) return r;
+    const d = pd('直径'); if(d) return d/2;
+    const S = pd('底面积'); if(S) return Math.round(Math.sqrt(S/3.14)*10)/10;
+    return null;
+  };
+  // ---- 观察物体/搭立体图形（从某方向看的视图题）：不配单个立体图，避免误导 ----
+  if(/搭|摆|从正面|从上面|从侧面|从右面|从左面|从前面|立体图形|由小正方体|用小正方体/.test(t) && /正方体|长方体/.test(t) && !/最多.{0,4}(几|两个)个?面|能看到.{0,4}个面/.test(t)){
+    return q;
+  }
   // ---- A级：几何图形 ----
   if(/圆环/.test(t)) img = geoRing(50,28);
-  else if(/圆锥/.test(t)) img = geoCone(4,9);
-  else if(/圆柱/.test(t) && /高/.test(t)) img = geoCylinder(4,10);
-  else if(/长方体/.test(t)) img = geoCuboid(6,4,5);
-  else if(/正方体/.test(t)) img = geoCube(4);
-  else if(/梯形/.test(t) && /面积/.test(t)) img = geoTrapezoid(4,8,5);
-  else if(/平行四边形/.test(t) && /面积/.test(t)) img = geoParallelogram(8,5);
-  else if(/三角形/.test(t) && (/面积/.test(t)||/高/.test(t)||/底/.test(t))) img = geoTriangle(6,4);
+  else if(/圆锥/.test(t)) img = geoCone(pdR()||4, pd('高')||9);
+  else if(/圆柱/.test(t) && /高/.test(t)) img = geoCylinder(pdR()||4, pd('高')||10);
+  else if(/长方体/.test(t)) img = geoCuboid(pd('长')||6, pd('宽')||4, pd('高')||5);
+  else if(/正方体/.test(t)) img = geoCube(pd('棱长')||4);
+  else if(/梯形/.test(t) && !/面积.{0,3}是\s*\d/.test(t) && /面积/.test(t)) img = geoTrapezoid(pd('上底')||4, pd('下底')||8, pd('高')||5);
+  else if(/平行四边形/.test(t) && !/面积.{0,3}是\s*\d/.test(t) && /面积/.test(t)) img = geoParallelogram(pd('底')||8, pd('高')||5);
+  else if(/三角形/.test(t) && !/顶角|底角|腰长|等腰|周长/.test(t) && !/面积.{0,3}是\s*\d/.test(t) && (/面积/.test(t)||/高是|高为|高=/.test(t)||/底是|底为|底=/.test(t))) img = geoTriangle(pd('底')||6, pd('高')||4);
   else if(/正方形.{0,14}(画|里|内).{0,6}(最大的圆|内切圆|圆)/.test(t)) img = geoSqInCircle(6);
   else if(/正方形/.test(t) && (/面积/.test(t)||/周长/.test(t))) img = geoRect(80,80);
   else if(/长方形/.test(t) && (/面积/.test(t)||/周长/.test(t))) img = geoRect(92,52);
@@ -6323,23 +6351,28 @@ function autoIllustrate(q, unitKey){
   else if(/摄氏度/.test(t)) img = geoThermometer(-5);
   // ---- A级：比与百分率 ----
   else if(/含盐率|出勤率|合格率|发芽率|成活率|命中率/.test(t)) img = geoPercent(85,100,'比率（部分/总量）');
-  else if(/按.{0,10}(分配|配制)|长与宽的比|甲乙两数的比|围成.{0,8}比|药粉.{0,4}比/.test(t)){ const rm=t.match(/(\d+)\s*:\s*(\d+)/); img = rm ? geoRatioBar(parseInt(rm[1]),parseInt(rm[2])) : geoRatioBar(3,2); }
-  else if(/打.{0,3}折|七五折|八五折|几折|利率|年利率|成数|几成/.test(t)) img = geoPercent(80,100,'折扣/成数');
+  else if(/按.{0,10}(分配|配制)|长与宽的比|甲乙两数的比|围成.{0,8}比|药粉.{0,4}比/.test(t)){ const rm=t.match(/(\d+)\s*:\s*(\d+)/); img = rm ? geoRatioBar(parseInt(rm),parseInt(rm)) : geoRatioBar(3,2); }
+  else if(/打.{0,3}折|七五折|八五折|几折|成数|几成/.test(t)){
+    const d = parseDiscount(t);
+    img = geoPercent(d||80, 100, '折扣/成数');
+  }
   // ---- A级：鸽巢/抽屉原理 ----
   else if(/抽屉|鸽巢|至少取出.{0,6}球|同一天过生日|同一个月过生日|至少取出.*保证/.test(t)) img = geoPigeonhole(7,3);
-  // ---- A级：数学广角-搭配/找次品 ----
-  else if(/搭配|有.{1,4}种选|每两人.{0,4}赛|不同的.*选法/.test(t)) img = geoRatio(3,2,'选项一','选项二');
   // ---- A级：数对/坐标位置 ----
-  else if(/数对|第.{1,3}列第.{1,3}行|方格纸/.test(t)) img = geoCoordinate(5,3,'(5,3)');
-  // ---- A级：植树问题 ----
-  else if(/植树|栽.{0,4}棵|每隔.{1,6}米(栽|种|摆|插|装)|路灯|彩旗|锯成|挂钟|走廊一边/.test(t)) img = geoTreePlanting(6,5,'both');
+  else if(/数对|第.{1,3}列第.{1,3}行|方格纸/.test(t)){ const cm=t.match(/(?:\(|（)?(\d+)\s*[，,]\s*(\d+)/); img = geoCoordinate(cm?parseInt(cm[1]):5, cm?parseInt(cm[2]):3, cm ? '('+cm[1]+','+cm[2]+')' : '(5,3)'); }
+  // ---- A级：植树问题（仅真正的间隔/两端/封闭类） ----
+  else if(/每隔.{1,6}米(栽|种|摆|插|装|挂|放)|两端都|两端不|沿.{0,6}(栽|种)|圆形.{0,6}(栽|种)|锯成|挂钟|走廊|间隔.{0,4}(栽|装|插)/.test(t)) img = geoTreePlanting(6,5,'both');
   // ---- A级：图形旋转 ----
   else if(/旋转|顺时针|逆时针|绕.{1,6}(旋转|转动)/.test(t)) img = geoRotate();
   // ---- A级：折线统计图 ----
-  else if(/折线统计图|气温变化|体温变化/.test(t)) img = geoLineChart(['周一','周二','周三','周四','周五'],[12,18,15,22,20],'');
+  else if(/折线统计图|折线图|气温变化|体温变化|气温/.test(t)) img = geoLineChart(['周一','周二','周三','周四','周五'],[12,18,15,22,20],'');
   // ---- A级：分数意义（平均分/每段占全长） ----
   if(!img && /平均分成.{1,8}份|每段占全长|占全长|占全班|占全级|每.{1,2}占|平均分成/.test(t)){
-    const fr2 = extractFraction(t);
+    let fr2 = extractFraction(t);
+    if(!fr2){
+      const fm = t.match(/(?:平均)?分成(\d+)\s*份?[，,。]?[^。，]*?(?:吃了|用了|取出|拿走|看了|拿了|种了)(\d+)\s*[块份个]/);
+      if(fm) fr2 = {num: parseInt(fm[2]), den: parseInt(fm[1])};
+    }
     img = fr2 ? geoFractionBar(fr2.num, fr2.den) : geoFractionBar(1,4);
   }
   // ---- A级：列方程解决问题（线段图） ----
@@ -6347,7 +6380,7 @@ function autoIllustrate(q, unitKey){
   // ---- B级：语文古诗意境卡 ----
   else if(/默写《|《[^》]{2,10}》/.test(t)){
     const mt = t.match(/《([^》]{2,10})》/);
-    img = geoPoemScene(mt?mt[1]:'古诗','','');
+    img = geoPoemScene(mt?mt:'古诗','','');
   }
   // ---- B级：语文阅读理解场景卡 ----
   else if(/阅读短文|阅读理解|短文|课文《|课文中/.test(t)) img = geoReadingScene('📖','阅读理解');
@@ -6361,7 +6394,6 @@ function autoIllustrate(q, unitKey){
   if(img) q.image = img;
   return q;
 }
-
 // 数学题目模板
 function getMathTemplates(grade,term,unitId){
   const templates=[];
