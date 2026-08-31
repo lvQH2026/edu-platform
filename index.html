@@ -12489,6 +12489,12 @@ function startExamWithCheck(type){
 }
 
 function renderStudyPage(){
+  if(!STATE.selectedGrade||!STATE.selectedTerm||!STATE.selectedSubject||!STATE.selectedUnit){
+    STATE.selectedGrade=STATE.selectedGrade||((STATE.userData&&STATE.userData.grade)?String(STATE.userData.grade):'5');
+    STATE.selectedTerm=STATE.selectedTerm||'up';
+    STATE.selectedSubject=STATE.selectedSubject||'math';
+    if(!STATE.selectedUnit){ try{ var _u0=CURRICULUM[STATE.selectedGrade][STATE.selectedTerm][STATE.selectedSubject].units; STATE.selectedUnit=(_u0&&_u0[0])?_u0[0].id:null; }catch(e){} }
+  }
   const grade=STATE.selectedGrade;
   const term=STATE.selectedTerm==='up'?'上册':'下册';
   const subject=STATE.selectedSubject==='chinese'?'语文':'数学';
