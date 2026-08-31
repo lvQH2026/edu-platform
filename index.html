@@ -1580,12 +1580,13 @@ a{text-decoration:none;color:inherit}
 
 /* ===== 导航上移 + 配图放大（2026-08-31 整改） ===== */
 .qnav{display:flex;align-items:center;gap:10px;justify-content:space-between;position:sticky;top:0;z-index:30;background:rgba(255,255,255,.97);padding:10px 4px;margin-bottom:10px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
-.qnav .btn{margin:0;flex:0 0 auto;width:auto;min-width:88px;padding:10px 16px;white-space:nowrap}
-.qnav-info{flex:1;text-align:center;font-size:14px;font-weight:700;color:#2c3e50}
+.qnav .btn{margin:0;flex:0 0 auto;width:auto;min-width:56px;padding:8px 12px;font-size:13px;white-space:nowrap;border-radius:999px}
+.qnav-info{flex:0 0 auto;text-align:center;font-size:13px;font-weight:600;color:#2c3e50;white-space:nowrap}
 .exam-container .exam-nav{display:flex;align-items:center;gap:10px;justify-content:space-between;position:sticky;top:0;z-index:30;background:rgba(255,255,255,.97);padding:10px 4px;margin-bottom:10px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
-.exam-container .exam-nav .btn{margin:0;flex:0 0 auto}
+.exam-container .exam-nav .btn{margin:0;flex:0 0 auto;width:auto;min-width:56px;padding:8px 12px;font-size:13px;border-radius:999px}
 .exam-container .question-nav{flex:1;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .q-image svg{width:min(320px,100%);height:auto}
+.correct-feedback{background:#e8f8ef;color:#1d9a5c;font-size:14px;font-weight:600;padding:10px 14px;border-radius:10px;margin:10px 0;text-align:center}
 .q-image{text-align:center;padding:14px 10px}
 
 </style>
@@ -12579,7 +12580,8 @@ function renderPracticePage(){
   }
   
   const socrates=es.socratesActive?renderSocrates(es):'';
-  const explain=es.showExplain?`<div class="explain-box show"><div class="e-title">📖 答案解析</div>${q.explain||'暂无解析'}</div>`:'';
+  const feedback=es.justCorrect?`<div class="correct-feedback">✓ 回答正确，即将进入下一题...</div>`:'';
+  const explain=(es.showExplain && !es.justCorrect)?`<div class="explain-box show"><div class="e-title">📖 答案解析</div>${q.explain||'暂无解析'}</div>`:'';
   
   return renderHeader('单元练习', `第${es.current+1}/${es.questions.length}题`, true)+
     `<div class="page">
@@ -12589,9 +12591,9 @@ function renderPracticePage(){
       </div>
       <div class="progress-bar"><div class="fill" style="width:${progress}%"></div></div>
       <div class="qnav">
-        <button class="btn btn-outline" onclick="prevQuestion()" ${es.current===0?'disabled':''}>← 上一题</button>
+        <button class="btn btn-outline" onclick="prevQuestion()" ${es.current===0?'disabled':''}>上一题</button>
         <span class="qnav-info">第 ${es.current+1}/${es.questions.length} 题</span>
-        <button class="btn btn-primary" onclick="nextQuestion()">${es.current===es.questions.length-1?'交卷 ✓':'下一题 →'}</button>
+        <button class="btn btn-primary" onclick="nextQuestion()">${es.current===es.questions.length-1?'交卷':'下一题'}</button>
       </div>
       <div class="question-card">
         <div class="q-meta">
@@ -12601,6 +12603,7 @@ function renderPracticePage(){
         <div class="q-text">${q.q}</div>
         ${q.image?`<div class="q-image">${q.image}</div>`:''}
         ${optionsHtml}
+        ${feedback}
         ${socrates}
         ${explain}
       </div>
@@ -13652,9 +13655,20 @@ function checkAnswer(userAns){
     es.socratesSteps=generateSocrates(q);
     es.socratesCurrent=0;
     es.showHint=false;
+    es.justCorrect=false;
   }else{
     es.socratesActive=false;
     es.showExplain=true;
+    // 单元练习：答对自动进入下一题（最后一题自动交卷），答错走苏格拉底引导
+    if(es.type==='practice'){
+      es.justCorrect=true;
+      if(es._autoNextTimer) clearTimeout(es._autoNextTimer);
+      if(es.current < es.questions.length-1){
+        es._autoNextTimer=setTimeout(function(){ if(STATE.examState===es){ nextQuestion(); } }, 1300);
+      }else{
+        es._autoNextTimer=setTimeout(function(){ if(STATE.examState===es){ submitExam(); } }, 1300);
+      }
+    }
   }
 }
 
@@ -13680,6 +13694,7 @@ function prevQuestion(){
     STATE.examState.current--;
     STATE.examState.socratesActive=false;
     STATE.examState.showExplain=false;
+    STATE.examState.justCorrect=false;
     render();
   }
 }
@@ -13693,6 +13708,7 @@ function nextQuestion(){
     es.current++;
     es.socratesActive=false;
     es.showExplain=false;
+    es.justCorrect=false;
     render();
   }
 }
@@ -14102,13 +14118,13 @@ function renderExamPage(){
   </div>
   <div class="exam-container">
     <div class="exam-nav">
-      <button class="btn btn-outline" onclick="prevExamQuestion()" ${state.current===0?'disabled':''}>← 上一题</button>
+      <button class="btn btn-outline" onclick="prevExamQuestion()" ${state.current===0?'disabled':''}>上一题</button>
       <div class="question-nav">
         ${state.questions.map((q,i)=>`<div class="q-dot ${isAnswerAnswered(state.answers[i])?'answered':''} ${i===state.current?'current':''}" onclick="goExamQuestion(${i})">${i+1}</div>`).join('')}
       </div>
       ${state.current<state.questions.length-1 ? 
-        `<button class="btn btn-primary" onclick="nextExamQuestion()">下一题 →</button>` :
-        `<button class="btn btn-success" onclick="submitExam()">提交试卷 ✓</button>`
+        `<button class="btn btn-primary" onclick="nextExamQuestion()">下一题</button>` :
+        `<button class="btn btn-success" onclick="submitExam()">交卷</button>`
       }
     </div>
     <div class="question-card">${questionHtml}</div>
