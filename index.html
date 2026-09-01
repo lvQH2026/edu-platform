@@ -12955,6 +12955,7 @@ function render(){
     case 'paperGrade': html=renderPaperGradePage(); break;
     case 'english': html=renderEnglishPage(); break;
     case 'phonics-level': html=renderPhonicsLevelPage(); break;
+    case 'english-unit': html=renderEnglishUnitPage(); break;
     case 'ipa-detail': html=renderIPADetailPage(); break;
     case 'knowledge': html=renderKnowledgePage(); break;
     case 'weak': html=renderWeakPage(); break;
@@ -14114,7 +14115,7 @@ function renderUnitPage(){
         </div>
         <div class="action-btn" onclick="startExamWithCheck('month')">
           <div class="act-icon">📊</div>
-          <div class="act-name">月考试</div>
+          <div class="act-name">月考</div>
           <div style="font-size:10px;color:#999;margin-top:4px">阶段综合</div>
         </div>
         <div class="action-btn" onclick="startExamWithCheck('mid')">
@@ -14986,6 +14987,174 @@ function renderPhonicsList(){
   `).join('');
 }
 
+// ============================================
+// 英语配套练习（自然拼读 / 国际音标 / 同步课程）
+// 数据池 + 生成器，复用统一练习/判分/错题引擎
+// ============================================
+const ENG_QUESTION_BANK = {
+  phonics: {
+    1: [
+      {q:'字母 C 在单词 cat 中发什么音？',opts:['/k/','/s/','/tʃ/'],ans:0,explain:'字母 c 在 a/o/u 前通常发 /k/，如 cat、cup。'},
+      {q:'字母 D 在单词 dog 中发什么音？',opts:['/d/','/b/','/t/'],ans:0,explain:'d 发 /d/，如 dog。'},
+      {q:'字母 A 在单词 apple 中发什么音？',opts:['/æ/','/eɪ/','/ɑ:/'],ans:0,explain:'a 在 apple 中发短音 /æ/。'},
+      {q:'字母 S 在单词 sun 中发什么音？',opts:['/s/','/z/','/ʃ/'],ans:0,explain:'s 通常发 /s/，如 sun。'},
+      {q:'字母 M 在单词 man 中发什么音？',opts:['/m/','/n/','/l/'],ans:0,explain:'m 发 /m/，双唇闭合，如 man。'},
+      {q:'字母 F 在单词 fish 中发什么音？',opts:['/f/','/v/','/s/'],ans:0,explain:'f 发 /f/，上齿轻触下唇。'},
+      {q:'字母 K 在单词 kite 中发什么音？',opts:['/k/','/s/','/tʃ/'],ans:0,explain:'k 发 /k/，如 kite。'},
+      {q:'判断：字母 B 发 /b/ 音。',opts:['正确','错误'],ans:0,explain:'b 发 /b/，双唇闭合，声带振动。'},
+      {q:'字母 G 在单词 girl 中发什么音？',opts:['/ɡ/','/dʒ/','/k/'],ans:0,explain:'g 在 girl 中发 /ɡ/（在 age 中才发 /dʒ/）。'},
+      {q:'字母 T 在单词 ten 中发什么音？',opts:['/t/','/d/','/θ/'],ans:0,explain:'t 发 /t/，舌尖抵上齿龈。'},
+      {q:'字母 H 在单词 hat 中发什么音？',opts:['/h/','/x/','/k/'],ans:0,explain:'h 发 /h/，如 hat。'},
+      {q:'字母 L 在单词 leg 中发什么音？',opts:['/l/','/r/','/n/'],ans:0,explain:'l 发 /l/，舌尖抵上齿龈，气流从舌两侧出来。'},
+      {q:'字母 R 在单词 red 中发什么音？',opts:['/r/','/l/','/w/'],ans:0,explain:'r 发 /r/，舌尖向上卷起。'},
+      {q:'判断：字母 Z 发 /z/ 音。',opts:['正确','错误'],ans:0,explain:'z 发 /z/，如 zoo。'}
+    ],
+    2: [
+      {q:'下面哪个单词是 CVC 单词？',opts:['cat','cake','name'],ans:0,explain:'CVC=辅音+元音+辅音，cat 是 c-a-t。'},
+      {q:'d-o-g 连读拼出哪个单词？',opts:['dog','dig','dug'],ans:0,explain:'/d/+/ɒ/+/g/ 拼成 dog（狗）。'},
+      {q:'单词 hat 中字母 a 发什么音？',opts:['/æ/','/eɪ/','/ɑ:/'],ans:0,explain:'CVC 单词中的 a 发短音 /æ/，如 hat。'},
+      {q:'下面哪个单词是 CVC 单词？',opts:['pig','like','seat'],ans:0,explain:'pig=p-i-g，CVC 结构。'},
+      {q:'单词 cup 的中文意思是？',opts:['杯子','帽子','小狗'],ans:0,explain:'cup 杯子。'},
+      {q:'h-a-t 拼出哪个单词？',opts:['hat','hot','hit'],ans:0,explain:'/h/+/æ/+/t/ 拼成 hat（帽子）。'},
+      {q:'判断：单词 bed 是 CVC 单词。',opts:['正确','错误'],ans:0,explain:'bed=b-e-d，正确。'},
+      {q:'单词 sun 中 u 发什么音？',opts:['/ʌ/','/ju:/','/ʊ/'],ans:0,explain:'CVC 中 u 发短音 /ʌ/，如 sun。'},
+      {q:'p-i-n 拼出哪个单词？',opts:['pin','pen','pan'],ans:0,explain:'/p/+/ɪ/+/n/ 拼成 pin（别针）。'},
+      {q:'单词 bag 的中文意思是？',opts:['包','球','床'],ans:0,explain:'bag 包，书包。'}
+    ],
+    3: [
+      {q:'下面哪个单词符合"魔法e"规则（a_e）？',opts:['cake','cat','cap'],ans:0,explain:'c-a-k-e，末尾 e 让 a 发字母名音 /eɪ/。'},
+      {q:'单词 kite 中 i 发什么音？',opts:['/aɪ/','/ɪ/','/e/'],ans:0,explain:'kite 符合 i_e，i 发字母名音 /aɪ/。'},
+      {q:'字母组合 sh 在 ship 中发什么音？',opts:['/ʃ/','/s/','/tʃ/'],ans:0,explain:'sh 发 /ʃ/，如 ship。'},
+      {q:'字母组合 ch 在 chair 中发什么音？',opts:['/tʃ/','/k/','/ʃ/'],ans:0,explain:'ch 通常发 /tʃ/，如 chair。'},
+      {q:'下面哪个单词含"魔法e"？',opts:['name','nan','net'],ans:0,explain:'name=n-a-m-e，末尾 e 让 a 发 /eɪ/。'},
+      {q:'单词 nose 中 o 发什么音？',opts:['/əʊ/','/ɒ/','/ɔ:/'],ans:0,explain:'nose 符合 o_e，o 发字母名音 /əʊ/。'},
+      {q:'判断：单词 bike 中 i 发字母名音 /aɪ/。',opts:['正确','错误'],ans:0,explain:'bike 符合 i_e，i 发 /aɪ/。'},
+      {q:'th 在单词 think 中发什么音？',opts:['/θ/','/ð/','/t/'],ans:0,explain:'think 中 th 发清音 /θ/。'},
+      {q:'单词 gate 中 a 发什么音？',opts:['/eɪ/','/æ/','/ɑ:/'],ans:0,explain:'gate 符合 a_e，a 发 /eɪ/。'},
+      {q:'字母组合 th 在 this 中发什么音？',opts:['/ð/','/θ/','/t/'],ans:0,explain:'this 中 th 发浊音 /ð/。'}
+    ],
+    4: [
+      {q:'字母组合 ai 通常发什么音？',opts:['/eɪ/','/aɪ/','/æ/'],ans:0,explain:'ai 发 /eɪ/，如 rain、train。'},
+      {q:'下面哪个单词含 R 控制元音？',opts:['car','cat','cake'],ans:0,explain:'ar 组合，r 控制 a 发 /ɑ:/，如 car。'},
+      {q:'单词 rain 中 ai 发什么音？',opts:['/eɪ/','/æ/','/ɪ/'],ans:0,explain:'rain=r-ai-n，ai 发 /eɪ/。'},
+      {q:'字母组合 ee 在 see 中发什么音？',opts:['/i:/','/e/','/eɪ/'],ans:0,explain:'ee 发长音 /i:/，如 see、bee。'},
+      {q:'下面哪个单词含 R 控制元音？',opts:['bird','bike','bit'],ans:0,explain:'ir 组合，r 控制发 /ɜ:/，如 bird。'},
+      {q:'单词 book 中 oo 发什么音？',opts:['/ʊ/','/u:/','/ɒ/'],ans:0,explain:'oo 在 book 发短音 /ʊ/（food 中发长音 /u:/）。'},
+      {q:'判断：单词 day 中 ay 发 /eɪ/。',opts:['正确','错误'],ans:0,explain:'ay 发 /eɪ/，如 day、play。'},
+      {q:'单词 her 中 er 发什么音？',opts:['/ɜ:/','/e/','/ə/'],ans:0,explain:'er 在重读时发 /ɜ:/，如 her。'},
+      {q:'字母组合 ea 在 sea 中发什么音？',opts:['/i:/','/e/','/eɪ/'],ans:0,explain:'ea 在 sea 发 /i:/（bread 中发 /e/）。'},
+      {q:'单词 turn 中 ur 发什么音？',opts:['/ɜ:/','/ʌ/','/u:/'],ans:0,explain:'ur 发 /ɜ:/，如 turn、nurse。'}
+    ],
+    5: [
+      {q:'下面哪个单词是 sight word（不规则词）？',opts:['the','cat','bike'],ans:0,explain:'the 不符合拼读规则，需整体记忆。'},
+      {q:'单词 have 的正确拼写是？',opts:['have','hav','hafe'],ans:0,explain:'have 发 /hæv/，拼写 h-a-v-e。'},
+      {q:'com-put-er 划分成几个音节？',opts:['3个','2个','4个'],ans:0,explain:'com-put-er=3 个音节。'},
+      {q:'下面哪个是 sight word？',opts:['said','sun','sit'],ans:0,explain:'said 是不规则词，发 /sed/。'},
+      {q:'单词 people 的正确拼写是？',opts:['people','peple','pepole'],ans:0,explain:'people=p-e-o-p-l-e。'},
+      {q:'hap-py 是几个音节？',opts:['2个','1个','3个'],ans:0,explain:'hap-py=2 个音节。'},
+      {q:'判断：could 是 sight word。',opts:['正确','错误'],ans:0,explain:'could 发 /kʊd/，不规则，正确。'},
+      {q:'单词 because 的正确拼写是？',opts:['because','becaus','beacuse'],ans:0,explain:'because=b-e-c-a-u-s-e。'},
+      {q:'下面哪个是 sight word？',opts:['were','cat','dog'],ans:0,explain:'were 是不规则词，发 /wɜ:/。'},
+      {q:'单词 beautiful 划分成几个音节？',opts:['3个','2个','4个'],ans:0,explain:'beau-ti-ful=3 个音节。'}
+    ]
+  },
+  ipa: [
+    {q:'音标 /i:/ 对应下面哪个单词？',opts:['see','sit','sun'],ans:0,explain:'see 发 /si:/，/i:/ 是长元音。'},
+    {q:'单词 book 的音标是？',opts:['/bʊk/','/bu:k/','/bɒk/'],ans:0,explain:'book 发 /bʊk/，oo 发 /ʊ/。'},
+    {q:'下面哪个是元音音标？',opts:['/æ/','/p/','/k/'],ans:0,explain:'/æ/ 是短元音，/p/、/k/ 是辅音。'},
+    {q:'下面哪个是辅音音标？',opts:['/m/','/aɪ/','/ə/'],ans:0,explain:'/m/ 是鼻辅音，/aɪ/、/ə/ 是元音。'},
+    {q:'音标 /eɪ/ 对应哪个单词？',opts:['day','dog','duck'],ans:0,explain:'day 发 /deɪ/。'},
+    {q:'单词 cat 的音标是？',opts:['/kæt/','/keɪt/','/kɑ:t/'],ans:0,explain:'cat 发 /kæt/，a 发 /æ/。'},
+    {q:'判断：/θ/ 是元音音标。',opts:['错误','正确'],ans:0,explain:'/θ/ 是辅音（清齿音），如 think。'},
+    {q:'单词 food 中 oo 发什么音？',opts:['/u:/','/ʊ/','/ʌ/'],ans:0,explain:'food 中 oo 发长音 /u:/。'},
+    {q:'音标 /ʃ/ 对应哪个单词？',opts:['she','see','sea'],ans:0,explain:'she 发 /ʃi:/，/ʃ/ 是清辅音。'},
+    {q:'单词 bird 的音标是？',opts:['/bɜːd/','/bɪd/','/bəd/'],ans:0,explain:'bird 发 /bɜːd/，ir 发 /ɜ:/。'}
+  ],
+  pep: {
+    e1: [
+      {q:'单词 where 的中文意思是？',opts:['哪里','那里','这里'],ans:0,explain:'where 哪里，用来问地点。'},
+      {q:'"怎么到那里" 的英文是？',opts:['how to get there','what to do there','where to go there'],ans:0,explain:'how 怎么 + get there 到那里。'},
+      {q:'单词 turn 的中文意思是？',opts:['转弯','跑','停'],ans:0,explain:'turn 转弯，如 turn left 左转。'},
+      {q:'near 的中文意思是？',opts:['在……附近','在……后面','在……前面'],ans:0,explain:'near 在附近。'},
+      {q:'单词 museum 的中文意思是？',opts:['博物馆','图书馆','医院'],ans:0,explain:'museum 博物馆。'},
+      {q:'"向左转" 的英文是？',opts:['turn left','turn right','go straight'],ans:0,explain:'left 左，turn left 向左转。'},
+      {q:'判断：straight 是"笔直地"。',opts:['正确','错误'],ans:0,explain:'go straight 直走，straight 笔直地。'},
+      {q:'单词 hospital 的中文意思是？',opts:['医院','学校','商店'],ans:0,explain:'hospital 医院。'},
+      {q:'"在书店" 的英文是？',opts:['at the bookstore','at the hospital','at the school'],ans:0,explain:'bookstore 书店。'},
+      {q:'单词 left 的中文意思是？',opts:['左边','右边','前面'],ans:0,explain:'left 左，right 右。'}
+    ],
+    e2: [
+      {q:'单词 bus 的中文意思是？',opts:['公共汽车','自行车','火车'],ans:0,explain:'bus 公共汽车。'},
+      {q:'"骑自行车" 的英文是？',opts:['by bike','by bus','by car'],ans:0,explain:'by + 交通工具 表示乘坐方式。'},
+      {q:'单词 walk 的中文意思是？',opts:['走路','跑','跳'],ans:0,explain:'walk 步行。'},
+      {q:'"乘火车" 的英文是？',opts:['by train','by plane','by ship'],ans:0,explain:'train 火车。'},
+      {q:'单词 plane 的中文意思是？',opts:['飞机','轮船','汽车'],ans:0,explain:'plane 飞机，by plane 乘飞机。'},
+      {q:'on foot 的中文意思是？',opts:['步行','开车','坐车'],ans:0,explain:'on foot 步行。'},
+      {q:'判断：traffic light 是"红绿灯"。',opts:['正确','错误'],ans:0,explain:'traffic light 交通灯（红绿灯）。'},
+      {q:'单词 ship 的中文意思是？',opts:['轮船','火车','飞机'],ans:0,explain:'ship 轮船。'},
+      {q:'"乘地铁" 的英文是？',opts:['by subway','by bike','on foot'],ans:0,explain:'subway 地铁。'},
+      {q:'单词 stop 的中文意思是？',opts:['停','走','跑'],ans:0,explain:'stop 停，bus stop 公交站。'}
+    ],
+    e3: [
+      {q:'单词 weekend 的中文意思是？',opts:['周末','工作日','假期'],ans:0,explain:'weekend 周末。'},
+      {q:'"下周" 的英文是？',opts:['next week','last week','this week'],ans:0,explain:'next 下一个，next week 下周。'},
+      {q:'单词 plan 的中文意思是？',opts:['计划','结果','开始'],ans:0,explain:'plan 计划，weekend plan 周末计划。'},
+      {q:'单词 visit 的中文意思是？',opts:['拜访','离开','等待'],ans:0,explain:'visit 拜访、参观。'},
+      {q:'"去游泳" 的英文是？',opts:['go swimming','go running','go shopping'],ans:0,explain:'go + v-ing 表去做某事。'},
+      {q:'单词 tomorrow 的中文意思是？',opts:['明天','昨天','今天'],ans:0,explain:'tomorrow 明天。'},
+      {q:'判断：trip 是"旅行"。',opts:['正确','错误'],ans:0,explain:'trip 旅行、短途出行。'},
+      {q:'单词 cinema 的中文意思是？',opts:['电影院','医院','公园'],ans:0,explain:'cinema 电影院。'},
+      {q:'"去野餐" 的英文是？',opts:['have a picnic','have a party','have a rest'],ans:0,explain:'picnic 野餐。'},
+      {q:'单词 tonight 的中文意思是？',opts:['今晚','明天','昨天'],ans:0,explain:'tonight 今晚。'}
+    ]
+  }
+};
+
+function generateEnglishQuestions(type, param){
+  let pool=[];
+  if(type==='phonics'){ pool=(ENG_QUESTION_BANK.phonics[param]||[]); }
+  else if(type==='ipa'){ pool=ENG_QUESTION_BANK.ipa; }
+  else if(type==='pep'){ pool=(ENG_QUESTION_BANK.pep[param]||[]); }
+  if(!pool.length) return [];
+  pool=pool.slice().sort(function(){return Math.random()-0.5;});
+  if(pool.length>8) pool=pool.slice(0,8);
+  pool.forEach(function(q){ if(!q.score) q.score=5; q.type='choice'; });
+  return pool;
+}
+
+function startEnglishPractice(type, param){
+  const qs=generateEnglishQuestions(type,param);
+  if(!qs.length){ showGlobalTip('该练习暂未开放'); return; }
+  let title='英语练习';
+  if(type==='phonics'){ title='自然拼读 Level '+param+' 练习'; }
+  else if(type==='ipa'){ title='国际音标综合练习'; }
+  else if(type==='pep'){ const u=ENGLISH_DATA.pep.find(function(x){return x.id===param;}); title=(u?u.name:'同步课程')+' 练习'; }
+  STATE.selectedSubject='english';
+  STATE.examState={
+    type:'english', title:title, questions:qs,
+    current:0, answers:new Array(qs.length).fill(null),
+    correct:new Array(qs.length).fill(false),
+    socratesActive:false, socratesSteps:[], socratesCurrent:0,
+    showHint:false, showExplain:false, justCorrect:false,
+    submitted:false, timeUsed:0, startTime:Date.now()
+  };
+  navigate('practice');
+}
+
+function renderEnglishUnitPage(){
+  const unit=STATE.englishParams.unit;
+  const data=ENGLISH_DATA.pep.find(function(u){return u.id===unit;});
+  if(!data) return '<div class="empty-state"><p>内容建设中</p></div>';
+  return renderHeader(data.name, data.desc, true)+
+    `<div class="page">
+      <div class="knowledge-section"><h3><span class="icon">📖</span>单元内容</h3><div class="content"><p>${data.desc}。本单元配套 8 道基础练习，完成后自动进入错题本，可反复复习。</p></div></div>
+      <div class="knowledge-section"><h3><span class="icon">📝</span>单元练习</h3><div class="content">
+        <p style="font-size:13px;color:#666;margin-bottom:10px;">单词与句型小测：答对自动进入下一题，答错立即看解析。</p>
+        <div style="text-align:center;"><button class="btn btn-primary" style="padding:10px 28px;font-size:14px;" onclick="startEnglishPractice('pep','${unit}')">开始练习 ›</button></div>
+      </div></div>
+    </div>`+renderTabBar('english');
+}
+
 function renderPhonicsLevelPage(){
   const level=STATE.englishParams.level;
   const data=ENGLISH_DATA.phonics.find(p=>p.level===level);
@@ -15084,6 +15253,11 @@ function renderPhonicsLevelPage(){
       </div>
     </div>`;
   }
+  // 英语配套练习入口
+  content += `<div class="knowledge-section"><h3><span class="icon">📝</span>课后练习</h3><div class="content">
+    <p style="font-size:13px;color:#666;margin-bottom:10px;">检验 Level ${level} 的学习成果：答对自动进入下一题，答错立即看解析。</p>
+    <div style="text-align:center;"><button class="btn btn-primary" style="padding:10px 28px;font-size:14px;" onclick="startEnglishPractice('phonics',${level})">开始练习 ›</button></div>
+  </div></div>`;
   return renderHeader(data.name, data.desc, true)+
     `<div class="page">${content}</div>`+renderTabBar('english');
 }
@@ -15092,6 +15266,14 @@ function renderIPAList(){
   const vowels=ENGLISH_DATA.ipa.vowels;
   const consonants=ENGLISH_DATA.ipa.consonants;
   return `
+  <div class="knowledge-section">
+    <h3><span class="icon">📝</span>音标综合练习</h3>
+    <div class="content">
+      <p style="font-size:13px;color:#666;margin-bottom:10px;">8 道音标题：元音/辅音辨认、音标对应例词。</p>
+      <div style="text-align:center;"><button class="btn btn-primary" style="padding:10px 28px;font-size:14px;" onclick="startEnglishPractice('ipa',0)">开始练习 ›</button></div>
+    </div>
+  </div>
+
   <div class="knowledge-section">
     <h3><span class="icon">🔊</span>元音（20个）</h3>
     <div class="content">
@@ -15148,7 +15330,7 @@ function renderIPADetailPage(){
 
 function renderPEPList(){
   return ENGLISH_DATA.pep.map(u=>`
-    <div class="unit-item" onclick="alert('同步课程内容建设中')">
+    <div class="unit-item" onclick="STATE.englishParams={unit:'${u.id}'};navigate('english-unit')">
       <div class="unit-num">${u.icon}</div>
       <div class="unit-info">
         <div class="unit-name">${u.name}</div>
@@ -15196,9 +15378,10 @@ function renderExamModal(){
   if(examModalState.grade && examModalState.term && examModalState.subject){
     typeHtml = '<div class="modal-section"><div class="modal-section-title">选择考试类型</div><div class="modal-options" style="grid-template-columns:repeat(2,1fr)">' +
       '<div class="modal-option ' + (examModalState.examType === 'unit' ? 'active' : '') + '" onclick="selectExamType(\'unit\')">单元考试</div>' +
-      '<div class="modal-option ' + (examModalState.examType === 'month' ? 'active' : '') + '" onclick="selectExamType(\'month\')">月考试</div>' +
+      '<div class="modal-option ' + (examModalState.examType === 'month' ? 'active' : '') + '" onclick="selectExamType(\'month\')">月考</div>' +
       '<div class="modal-option ' + (examModalState.examType === 'mid' ? 'active' : '') + '" onclick="selectExamType(\'mid\')">期中考试</div>' +
       '<div class="modal-option ' + (examModalState.examType === 'final' ? 'active' : '') + '" onclick="selectExamType(\'final\')">期末考试</div>' +
+      '<div class="modal-option ' + (examModalState.examType === 'sim' ? 'active' : '') + '" onclick="selectExamType(\'sim\')">综合模拟</div>' +
     '</div></div>';
   }
   
@@ -15206,7 +15389,7 @@ function renderExamModal(){
   
   var modalHtml = '<div class="modal-overlay" onclick="if(event.target===this)closeExamModal()">' +
     '<div class="modal-box">' +
-      '<div class="modal-title">📝 选择模拟考试</div>' +
+      '<div class="modal-title">📝 选择考试</div>' +
       '<div class="modal-section"><div class="modal-section-title">选择年级（1-6年级）</div><div class="modal-options">' + gradeHtml + '</div></div>' +
       termHtml + subjectHtml + typeHtml +
       '<div class="modal-btns">' +
@@ -15697,17 +15880,24 @@ function checkAnswer(userAns){
   }
   es.correct[es.current]=isCorrect;
   if(!isCorrect){
-    // 触发苏格拉底引导
-    es.socratesActive=true;
-    es.socratesSteps=generateSocrates(q);
-    es.socratesCurrent=0;
-    es.showHint=false;
-    es.justCorrect=false;
+    if(es.type==='english'){
+      // 英语练习：答错直接显示解析，不触发数学苏格拉底
+      es.socratesActive=false;
+      es.showExplain=true;
+      es.justCorrect=false;
+    }else{
+      // 触发苏格拉底引导
+      es.socratesActive=true;
+      es.socratesSteps=generateSocrates(q);
+      es.socratesCurrent=0;
+      es.showHint=false;
+      es.justCorrect=false;
+    }
   }else{
     es.socratesActive=false;
     es.showExplain=true;
-    // 单元练习：答对自动进入下一题（最后一题自动交卷），答错走苏格拉底引导
-    if(es.type==='practice'){
+    // 单元练习/英语练习：答对自动进入下一题（最后一题自动交卷），答错走苏格拉底/解析
+    if(es.type==='practice'||es.type==='english'){
       es.justCorrect=true;
       if(es._autoNextTimer) clearTimeout(es._autoNextTimer);
       if(es.current < es.questions.length-1){
@@ -15978,11 +16168,14 @@ function startExam(type){
     const unitIndex = curriculum.units.findIndex(u=>u.id===unitId);
     const startIdx = Math.max(0, unitIndex - 2);
     units = curriculum.units.slice(startIdx, unitIndex+1).map(u=>u.id);
-    examTitle = '月考试（阶段综合）';
+    examTitle = '月考（阶段综合）';
   }else if(type==='mid'){
     const half = Math.ceil(curriculum.units.length / 2);
     units = curriculum.units.slice(0, half).map(u=>u.id);
     examTitle = '期中考试（半册综合）';
+  }else if(type==='sim'){
+    units = curriculum.units.map(u=>u.id);
+    examTitle = '综合模拟（小升初卷）';
   }else{
     units = curriculum.units.map(u=>u.id);
     examTitle = '期末考试（全册综合）';
@@ -16221,9 +16414,11 @@ function renderExamResult(){
   if(!state.scoreConfirmed){
     // ========== 阶段一：批改成绩页（红笔手写分数 + 双横线，模拟老师红笔批改）==========
     let level = '', comment = '';
-    if(state.totalScore >= 90){ level='优秀'; comment='太棒了！基础扎实，继续保持这份专注，向满分冲刺！'; }
-    else if(state.totalScore >= 80){ level='良好'; comment='很不错！大部分知识都掌握了，错题弄懂后再练一次会更稳。'; }
-    else if(state.totalScore >= 60){ level='及格'; comment='基本达标。请认真看下方各题得分与解析，把薄弱点补上。'; }
+    const maxScore = state.questions.reduce(function(s,q){ return s + (q.score||0); }, 0);
+    const pct = maxScore>0 ? (state.totalScore/maxScore*100) : 0;
+    if(pct >= 90){ level='优秀'; comment='太棒了！基础扎实，继续保持这份专注，向满分冲刺！'; }
+    else if(pct >= 80){ level='良好'; comment='很不错！大部分知识都掌握了，错题弄懂后再练一次会更稳。'; }
+    else if(pct >= 60){ level='及格'; comment='基本达标。请认真看下方各题得分与解析，把薄弱点补上。'; }
     else{ level='需努力'; comment='别灰心！仔细看每道题解析，把错题弄明白，下次一定能进步！'; }
 
     const itemHtml = state.questions.map(function(q,i){
@@ -16243,7 +16438,7 @@ function renderExamResult(){
         '<div class="redpen-score-card">' +
           '<div class="redpen-score-main">' +
             '<span class="redpen-big-wrap"><span class="redpen-big">'+state.totalScore+'</span><div class="redpen-dline"><span class="r1"></span><span class="r2"></span></div></span>' +
-            '<span class="redpen-total-unit">/ 100分</span>' +
+            '<span class="redpen-total-unit">/ '+maxScore+'分</span>' +
           '</div>' +
           '<div class="redpen-level">'+level+'</div>' +
         '</div>' +
@@ -16265,7 +16460,7 @@ function renderExamResult(){
   // ========== 阶段二：答案与解析页（用户点"确认"后进入）==========
   return '<div class="result-header"><div class="result-title">'+state.title+' · 答案与解析</div></div>' +
     '<div class="result-container">' +
-      '<div class="xsc-summary-bar">总分 <b class="redpen-pts" style="font-size:20px;margin:0 3px">'+state.totalScore+'</b> / 100 分 · 答对 '+state.correctCount+' 题 · 正确率 '+accuracy+'% · 用时 '+minutes+'分'+seconds+'秒</div>' +
+      '<div class="xsc-summary-bar">总分 <b class="redpen-pts" style="font-size:20px;margin:0 3px">'+state.totalScore+'</b> / '+maxScore+' 分 · 答对 '+state.correctCount+' 题 · 正确率 '+accuracy+'% · 用时 '+minutes+'分'+seconds+'秒</div>' +
       '<div class="xsc-section-title">📝 逐题答案与解析</div>' +
       state.questions.map(function(q,i){
         const typeName = q.judge?'判断题':(q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题');
