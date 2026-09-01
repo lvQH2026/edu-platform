@@ -2031,9 +2031,9 @@ function geoCuboid(l, w, h, unit){
       <rect x="140" y="18" width="44" height="56" transform="skewY(-34)" />
       <rect x="140" y="101" width="44" height="56" transform="skewY(34)" />
     </g>
-    <text x="100" y="76" text-anchor="middle" font-size="12" fill="#4A90D9">高${h}${unit}</text>
-    <text x="150" y="168" font-size="12" fill="#4A90D9">长${l}${unit}</text>
-    <text x="196" y="36" font-size="12" fill="#E74C3C">宽${w}${unit}</text>
+    <text x="100" y="76" text-anchor="middle" font-size="12" fill="#4A90D9">高${h||'?'}${unit}</text>
+    <text x="150" y="168" font-size="12" fill="#4A90D9">长${l||'?'}${unit}</text>
+    <text x="196" y="36" font-size="12" fill="#E74C3C">宽${w||'?'}${unit}</text>
   </svg>`;
 }
 
@@ -2226,8 +2226,8 @@ function geoRatioBar(a, b, la, lb){
   return `<svg width="230" height="64" viewBox="0 0 230 64" style="max-width:100%;margin:8px 0">
     <rect x="15" y="16" width="${w1}" height="30" fill="rgba(74,144,217,0.35)" stroke="#4A90D9" stroke-width="1.6"/>
     <rect x="${15+w1}" y="16" width="${w2}" height="30" fill="rgba(231,76,60,0.3)" stroke="#E74C3C" stroke-width="1.6"/>
-    <text x="${15+w1/2}" y="36" text-anchor="middle" font-size="12" fill="#1A1B1C" font-weight="600">${la} ${a}份</text>
-    <text x="${15+w1+w2/2}" y="36" text-anchor="middle" font-size="12" fill="#1A1B1C" font-weight="600">${lb} ${b}份</text>
+    <text x="${15+w1/2}" y="36" text-anchor="middle" font-size="12" fill="#1A1B1C" font-weight="600">${la || (a+'份')}</text>
+    <text x="${15+w1+w2/2}" y="36" text-anchor="middle" font-size="12" fill="#1A1B1C" font-weight="600">${lb || (b+'份')}</text>
   </svg>`;
 }
 
@@ -7242,10 +7242,15 @@ function generateMathQuestions(grade,term,unitId,count=100){
 // 智能补图：根据题干关键词自动附加A级配图（无图才补，已有图不覆盖）
 function extractFraction(t){
   const m = t.match(/(\d+)\/(\d+)/);
-  if(m && parseInt(m[2])<=12 && parseInt(m[2])>1 && parseInt(m[1])<=parseInt(m[2])) return {num:parseInt(m[1]),den:parseInt(m[2])};
+  if(m && parseInt(m[2],10)<=12 && parseInt(m[2],10)>1 && parseInt(m[1],10)<=parseInt(m[2],10)) return {num:parseInt(m[1],10),den:parseInt(m[2],10)};
+  const fm = t.match(/(?:平均)?分成(\d+)\s*[份组块段节][，,。]?[^。，]*?(?:吃了|用了|取出|拿走|看了|拿了|种了|用去|取)(\d+)\s*[块份个]/);
+  if(fm){ const n=parseInt(fm[2],10), d=parseInt(fm[1],10); if(d>0 && n>0 && n<=d) return {num:n,den:d}; }
+  const dm = t.match(/平均分成(\d+)\s*[份组块段节]/);
+  if(dm){ const d=parseInt(dm[1],10); if(d>0) return {num:1,den:d}; }
   return null;
 }
 function parseDiscount(t){
+  if(/对折|半价/.test(t)) return 50;
   const cn = {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};
   let m = t.match(/([一二三四五六七八九]+)\s*折/);
   if(m){
@@ -7264,7 +7269,7 @@ function autoIllustrate(q, unitKey){
   let img = '';
   // ---- 工具：从题干解析尺寸（如"底是5厘米/高8/上底4/棱长6"） ----
   const pd = function(key){
-    const m = t.match(new RegExp(key + '[是为]?\\s*(\\d+(?:\\.\\d+)?)'));
+    const m = t.match(new RegExp('(?:^|[^棱])' + key + '[是为]?\\s*(\\d+(?:\\.\\d+)?)'));
     return m ? parseFloat(m[1]) : null;
   };
   const pdR = function(){
@@ -7277,11 +7282,13 @@ function autoIllustrate(q, unitKey){
   if(/搭|摆|从正面|从上面|从侧面|从右面|从左面|从前面|立体图形|由小正方体|用小正方体/.test(t) && /正方体|长方体/.test(t) && !/最多.{0,4}(几|两个)个?面|能看到.{0,4}个面/.test(t)){
     return q;
   }
+  // ---- 识别图形类选择题：不配图，避免泄露答案 ----
+  if(/下面哪个图形|哪个图形是|哪一个图形/.test(t)) return q;
   // ---- A级：几何图形 ----
   if(/圆环/.test(t)) img = geoRing(50,28);
   else if(/圆锥/.test(t)) img = geoCone(pdR()||4, pd('高')||9);
   else if(/圆柱/.test(t) && /高/.test(t)) img = geoCylinder(pdR()||4, pd('高')||10);
-  else if(/长方体/.test(t)) img = geoCuboid(pd('长')||6, pd('宽')||4, pd('高')||5);
+  else if(/长方体/.test(t)) img = geoCuboid(pd('长'), pd('宽'), pd('高'));
   else if(/正方体/.test(t)) img = geoCube(pd('棱长')||4);
   else if(/梯形/.test(t) && !/面积.{0,3}是\s*\d/.test(t) && /面积/.test(t)) img = geoTrapezoid(pd('上底')||4, pd('下底')||8, pd('高')||5);
   else if(/平行四边形/.test(t) && !/面积.{0,3}是\s*\d/.test(t) && /面积/.test(t)) img = geoParallelogram(pd('底')||8, pd('高')||5);
@@ -7289,16 +7296,16 @@ function autoIllustrate(q, unitKey){
   else if(/正方形.{0,14}(画|里|内).{0,6}(最大的圆|内切圆|圆)/.test(t)) img = geoSqInCircle(6);
   else if(/正方形/.test(t) && (/面积/.test(t)||/周长/.test(t))) img = geoRect(80,80);
   else if(/长方形/.test(t) && (/面积/.test(t)||/周长/.test(t))) img = geoRect(92,52);
-  else if(/圆/.test(t) && (/面积/.test(t)||/周长/.test(t)||/半径/.test(t)||/直径/.test(t))) img = geoCircle(38);
+  else if(/圆/.test(t) && (/面积/.test(t)||/周长/.test(t)||/半径/.test(t)||/直径/.test(t))) img = geoCircle(Math.min(50, Math.max(10, (pdR()||38)*2 + 8)));
   // ---- A级：方向位置 ----
   else if(/北偏|东偏|南偏|西偏/.test(t)) img = geoDirection(30);
-  else if(/比例尺/.test(t)) img = geoScaleMap('1:10000','5','500米');
+  else if(/比例尺/.test(t)){ const sm=t.match(/比例尺(?:\s*为|是|=|:)?\s*(\d+)\s*:\s*(\d+)/); const dd=t.match(/图上(?:距离)?(?:是|为|=)?\s*(\d+(?:\.\d+)?)\s*厘米|相距(\d+(?:\.\d+)?)\s*厘米/); img = geoScaleMap(sm?sm[1]+':'+sm[2]:'1:10000', Math.min(Math.max((parseFloat((dd&&(dd[1]||dd[2]))||0)||0)*10,30),120)||60, '实际距离?'); }
   // ---- A级：负数和温度 ----
   else if(/℃|°C|温差|零下|记作|数轴/.test(t)) img = geoNumberLine(-4,5);
   else if(/摄氏度/.test(t)) img = geoThermometer(-5);
   // ---- A级：比与百分率 ----
   else if(/含盐率|出勤率|合格率|发芽率|成活率|命中率/.test(t)) img = geoPercent(85,100,'比率（部分/总量）');
-  else if(/按.{0,10}(分配|配制)|长与宽的比|甲乙两数的比|围成.{0,8}比|药粉.{0,4}比/.test(t)){ const rm=t.match(/(\d+)\s*:\s*(\d+)/); img = rm ? geoRatioBar(parseInt(rm),parseInt(rm)) : geoRatioBar(3,2); }
+  else if(/按.{0,10}(分配|配制)|长与宽的比|甲乙两数的比|围成.{0,8}比|药粉.{0,8}比/.test(t)){ const rm=t.match(/(\d+)\s*:\s*(\d+)/); img = rm ? geoRatioBar(parseInt(rm[1]),parseInt(rm[2]),rm[1]+'份',rm[2]+'份') : ''; }
   else if(/打.{0,3}折|七五折|八五折|几折|成数|几成/.test(t)){
     const d = parseDiscount(t);
     img = geoPercent(d||80, 100, '折扣/成数');
