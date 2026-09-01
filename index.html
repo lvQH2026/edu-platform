@@ -15664,6 +15664,8 @@ function extractNums(str){
 }
 
 // 规范化工答案字符串
+function fmtScore(n){ var v=Number(n); if(!isFinite(v)) v=0; return Math.round(v*10)/10; }
+
 function normAnsStr(s){
   return String(s===undefined||s===null?'':s).trim()
     .replace(/，/g,',')
@@ -16685,7 +16687,7 @@ function renderExamResult(){
         '<div class="redpen-score-card">' +
           '<div class="redpen-score-main">' +
             '<span class="redpen-big-wrap"><span class="redpen-big">'+fmt(state.totalScore)+'</span><div class="redpen-dline"><span class="r1"></span><span class="r2"></span></div></span>' +
-            '<span class="redpen-total-unit">/ '+maxScore+'分</span>' +
+            '<span class="redpen-total-unit">/ '+fmt(maxScore)+'分</span>' +
           '</div>' +
           '<div class="redpen-level">'+level+'</div>' +
         '</div>' +
@@ -16707,7 +16709,7 @@ function renderExamResult(){
   // ========== 阶段二：答案与解析页（用户点"确认"后进入）==========
   return '<div class="result-header"><div class="result-title">'+state.title+' · 答案与解析</div></div>' +
     '<div class="result-container">' +
-      '<div class="xsc-summary-bar">总分 <b class="redpen-pts" style="font-size:20px;margin:0 3px">'+fmt(state.totalScore)+'</b> / '+maxScore+' 分 · 答对 '+state.correctCount+' 题 · 正确率 '+accuracy+'% · 用时 '+minutes+'分'+seconds+'秒</div>' +
+      '<div class="xsc-summary-bar">总分 <b class="redpen-pts" style="font-size:20px;margin:0 3px">'+fmt(state.totalScore)+'</b> / '+fmt(maxScore)+' 分 · 答对 '+state.correctCount+' 题 · 正确率 '+accuracy+'% · 用时 '+minutes+'分'+seconds+'秒</div>' +
       '<div class="xsc-section-title">📝 逐题答案与解析</div>' +
       state.questions.map(function(q,i){
         const typeName = q.judge?'判断题':(q.type==='choice'?'选择题':q.type==='fill'?'填空题':q.type==='calc'?'计算题':'应用题');
@@ -17988,7 +17990,7 @@ function renderPaperHistory(){
       html += '<div class="paper-history-item" onclick="toggleHistoryDetail('+i+')">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center">';
       html += '<div><span class="history-date">'+dateStr+'</span> <span style="font-size:13px;color:#666">（'+r.questions.length+'题）</span></div>';
-      html += '<span class="history-score">'+r.totalScore+'/'+r.maxScore+'分</span>';
+      html += '<span class="history-score">'+fmtScore(r.totalScore)+'/'+fmtScore(r.maxScore)+'分</span>';
       html += '</div>';
       html += '<div id="history_detail_'+i+'" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid #eee">';
       r.questions.forEach(function(q){
