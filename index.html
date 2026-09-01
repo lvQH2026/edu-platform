@@ -15368,8 +15368,8 @@ function fracToken(s){
   s=String(s).trim();
   var m;
   // 带分数：x又a/b 或 x a/b（空格分隔）
-  if((m=s.match(/^(-?\d+)\s*又\s*(\d+)\s*\/\s*(\d+)$/))){ return {t:'frac', num:+m[1]* +m[3] + +m[2], den:+m[3]}; }
-  if((m=s.match(/^(-?\d+)\s+(\d+)\s*\/\s*(\d+)$/))){ var neg=+m[1]<0?-1:1; return {t:'frac', num:neg*(Math.abs(+m[1])* +m[3] + +m[2]), den:+m[3]}; }
+  if((m=s.match(/^(-?\d+)\s*又\s*(\d+)\s*\/\s*(\d+)$/))){ return {t:'frac', num:+m[1]*+m[3] + +m[2], den:+m[3]}; }
+  if((m=s.match(/^(-?\d+)\s+(\d+)\s*\/\s*(\d+)$/))){ var neg=+m[1]<0?-1:1; return {t:'frac', num:neg*(Math.abs(+m[1])*+m[3] + +m[2]), den:+m[3]}; }
   // 普通分数：a/b
   if((m=s.match(/^(-?\d+)\s*\/\s*(\d+)$/))){ return {t:'frac', num:+m[1], den:+m[2]}; }
   var v=parseFloat(s);
